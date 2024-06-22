@@ -5,7 +5,7 @@
   users.users.dyrean = {
     isNormalUser = true;
     description = "dyrean";
-    extraGroups = [ "networkmanager" "input" "wheel" "video" "audio" "tss" "sudo" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "input" "uinput" "libvirtd" ]; 
     shell = pkgs.zsh;
     packages = with pkgs; [
       brave

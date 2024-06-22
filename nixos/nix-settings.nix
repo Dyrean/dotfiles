@@ -8,4 +8,7 @@
     trusted-users = ["@wheel"];
     warn-dirty = false;
   };
+  programs.nix-ld = {
+      enable = true;
+  };
 }

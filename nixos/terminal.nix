@@ -16,7 +16,6 @@
 
     git
     gitleaks
-    lazygit
     numbat
     just
     ripgrep
@@ -38,6 +37,5 @@
     zellij
     oh-my-posh
     zoxide
-    thefuck
   ];
 }
