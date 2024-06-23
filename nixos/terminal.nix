@@ -1,41 +1,41 @@
 { pkgs, ... }:
 
 {
-  programs.zsh.enable = true;
+	programs.zsh.enable = true;
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    wget
+	# List packages installed in system profile. To search, run:
+	# $ nix search wget
+	environment.systemPackages = with pkgs; [
+		wget
 
-    fastfetch
-    onefetch
-    ipfetch
-    btop
-    gping
+		fastfetch
+		onefetch
+		ipfetch
+		btop
+		gping
 
-    git
-    gitleaks
-    numbat
-    just
-    ripgrep
-    tealdeer
+		git
+		gitleaks
+		numbat
+		just
+		ripgrep
+		tealdeer
 
-    stow
-    yazi
-    eza
-    bat
-    fzf
-    tokei
-    jq
-    fd
-    atuin
+		stow
+		yazi
+		eza
+		bat
+		fzf
+		tokei
+		jq
+		fd
+		atuin
 
-    vim
-    neovim
-    wezterm
-    zellij
-    oh-my-posh
-    zoxide
-  ];
+		vim
+		neovim
+		wezterm
+		zellij
+		oh-my-posh
+		zoxide
+	];
 }

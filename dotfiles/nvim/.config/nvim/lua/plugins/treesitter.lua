@@ -1,10 +1,10 @@
 return {
 	{ "nvim-treesitter/playground", cmd = "TSPlaygroundToggle" },
-    {
-        "windwp/nvim-ts-autotag",
-        event = "LazyFile",
-        opts = {},
-    },
+	{
+		"windwp/nvim-ts-autotag",
+		event = "LazyFile",
+		opts = {},
+	},
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = {
@@ -15,7 +15,7 @@ return {
 				"css",
 				"gitignore",
 				"go",
-                "templ",
+				"templ",
 				"graphql",
 				"http",
 				"java",

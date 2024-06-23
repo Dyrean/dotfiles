@@ -1,6 +1,6 @@
 { ... }:
 
 {
-  # Setup Env Variables
-  environment.variables.EDITOR = "nvim";
+	# Setup Env Variables
+	environment.variables.EDITOR = "nvim";
 }
