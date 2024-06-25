@@ -75,12 +75,6 @@ revert_icon = " "
 tag_icon = " "
 
 [[blocks.segments]]
-type = "angular"
-style = "plain"
-foreground = "p:terminal-blue"
-template = " {{ .Full }} "
-
-[[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "argocd"
 style = "powerline"
@@ -126,31 +120,31 @@ display_mode = "files"
 foreground = "p:terminal-blue"
 type = "bun"
 style = "plain"
-template = "🥟 {{ .Full }} "
+template = "🥟 "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "deno"
 style = "plain"
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "dotnet"
 style = "plain"
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "elixir"
 style = "plain"
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "flutter"
 style = "plain"
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
@@ -162,31 +156,31 @@ template = " {{.Project}} :: {{.Account}} "
 foreground = "p:terminal-blue"
 type = "firebase"
 style = "plain"
-template = "󰥧 {{ .Project }}"
+template = "󰥧 "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "go"
 style = "plain"
-template = "‭ﳑ {{ .Full }} "
+template = "‭ﳑ "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "haskell"
 style = "plain"
-template = " {{ .Full }}"
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "java"
 style = "plain"
-template = " {{ .Full }}"
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "kotlin"
 style = "plain"
-template = "<b>K</b> {{ .Full }} "
+template = "<b>K</b> "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
@@ -198,19 +192,13 @@ template = "ﴱ {{.Context}}{{if .Namespace}} :: {{.Namespace}}{{end}} "
 foreground = "p:terminal-blue"
 type = "lua"
 style = "plain"
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "node"
 style = "plain"
-template = " {{ .Full }} "
-
-[[blocks.segments]]
-foreground = "p:terminal-blue"
-type = "npm"
-style = "plain"
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
@@ -222,19 +210,13 @@ template = " {{ .Full }} "
 foreground = "p:terminal-blue"
 type = "php"
 style = "plain"
-template = " {{ .Full }} "
-
-[[blocks.segments]]
-foreground = "p:terminal-blue"
-type = "pnpm"
-style = "plain"
-template = "󰋁 {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
 type = "python"
 style = "plain"
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
@@ -244,22 +226,9 @@ template = " {{.Full}}{{ if .HasVite }}  {{ .Vite.Version }}{{ end }} "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
-type = "r"
-style = "plain"
-template = "R {{ .Full }} "
-
-[[blocks.segments]]
-foreground = "p:terminal-blue"
-type = "react"
-style = "plain"
-template = " {{ .Full }} "
-
-[[blocks.segments]]
-foreground = "p:terminal-blue"
 type = "rust"
 style = "plain"
-powerline_symbol = ""
-template = " {{ .Full }} "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
@@ -267,12 +236,6 @@ type = "pulumi"
 style = "diamond"
 powerline_symbol = ""
 template = "{{ .Stack }}{{if .User }} :: {{ .User }}@{{ end }}{{ if .URL }}{{ .URL }}{{ end }}"
-
-[[blocks.segments]]
-foreground = "p:terminal-blue"
-type = "project"
-style = "plain"
-template = "{{ if .Error }}{{ .Error }}{{ else }}{{ if .Version }} {{.Version}}{{ end }} {{ if .Name }}{{ .Name }}{{ end }}{{ end }} "
 
 [[blocks.segments]]
 style = "plain"
