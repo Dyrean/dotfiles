@@ -5,11 +5,22 @@ final_space = true
 console_title_template = '{{ .Shell }} in {{ .Folder }}'
 
 [palette]
-os = "#ACB0BE"
+os = "#7AA2f7"
 closer = "p:os"
-pink = "#F5C2E7"
-lavender = "#B4BEFE"
-blue = "#89B4FA"
+terminal-red = "#f7768e"
+pistachio-green = "#9ece6a"
+terminal-green = "#73daca"
+terminal-yellow = "#e0af68"
+terminal-blue = "#7aa2f7"
+celeste-blue = "#b4f9f8"
+light-sky-blue = "#7dcfff"
+terminal-white = "#c0caf5"
+white-blue = "#a9b1d6"
+blue-bell = "#9aa5ce"
+pastal-grey = "#cfc9c2"
+terminal-magenta = "#bb9af7"
+blue-black = "#565f89"
+terminal-black = "#414868"
 
 [[blocks]]
 alignment = "left"
@@ -23,13 +34,13 @@ template = "{{.Icon}} "
 type = "os"
 
 [[blocks.segments]]
-foreground = "p:blue"
+foreground = "p:terminal-magenta"
 style = "plain"
 template = "{{ .UserName }}@{{ .HostName }} "
 type = "session"
 
 [[blocks.segments]]
-foreground = "p:pink"
+foreground = "p:celeste-blue"
 style = "powerline"
 template = " {{ .Path }} "
 type = "path"
@@ -40,10 +51,16 @@ home_icon = "~"
 style = "full"
 
 [[blocks.segments]]
-foreground = "p:lavender"
-template = "{{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} {{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}"
-style = "plain"
 type = "git"
+style = "plain"
+foreground = "p:light-sky-blue"
+foreground_templates = [
+	"{{ if or (.Working.Changed) (.Staging.Changed) }}p:terminal-red{{ end }}",
+	"{{ if and (gt .Ahead 0) (gt .Behind 0)}}p:light-sky-blue {{ end }}",
+	"{{ if gt .Ahead 0 }}p:terminal-blue{{ end }}",
+	"{{ if gt .Behind 0 }}p:celeste-blue{{ end }}",
+]
+template = "{{ .UpstreamIcon }} {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} {{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}"
 
 [blocks.segments.properties]
 branch_icon = " "
@@ -58,6 +75,206 @@ revert_icon = " "
 tag_icon = " "
 
 [[blocks.segments]]
+type = "angular"
+style = "plain"
+foreground = "p:terminal-blue"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "argocd"
+style = "powerline"
+powerline_symbol = ""
+template = "{{ .Name }}:{{ .User }}@{{ .Server }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "aws"
+style = "powerline"
+powerline_symbol = ""
+template = " {{.Profile}}{{if .Region}}@{{.Region}}{{end}}"
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "az"
+style = "powerline"
+powerline_symbol = ""
+template = " {{ .EnvironmentName }}"
+
+[blocks.segments.properties]
+source = "pwsh"
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "azd"
+style = "powerline"
+powerline_symbol = ""
+template = " {{ .DefaultEnvironment }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "azfunc"
+style = "powerline"
+powerline_symbol = ""
+template = " {{ .Full }} "
+
+[blocks.segments.properties]
+fetch_version = true
+display_mode = "files"
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "bun"
+style = "plain"
+template = "🥟 {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "deno"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "dotnet"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "elixir"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "flutter"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "gcp"
+style = "plain"
+template = " {{.Project}} :: {{.Account}} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "firebase"
+style = "plain"
+template = "󰥧 {{ .Project }}"
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "go"
+style = "plain"
+template = "‭ﳑ {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "haskell"
+style = "plain"
+template = " {{ .Full }}"
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "java"
+style = "plain"
+template = " {{ .Full }}"
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "kotlin"
+style = "plain"
+template = "<b>K</b> {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "kubectl"
+style = "plain"
+template = "ﴱ {{.Context}}{{if .Namespace}} :: {{.Namespace}}{{end}} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "lua"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "node"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "npm"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "ocaml"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "php"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "pnpm"
+style = "plain"
+template = "󰋁 {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "python"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "quasar"
+style = "plain"
+template = " {{.Full}}{{ if .HasVite }}  {{ .Vite.Version }}{{ end }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "r"
+style = "plain"
+template = "R {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "react"
+style = "plain"
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "rust"
+style = "plain"
+powerline_symbol = ""
+template = " {{ .Full }} "
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "pulumi"
+style = "diamond"
+powerline_symbol = ""
+template = "{{ .Stack }}{{if .User }} :: {{ .User }}@{{ end }}{{ if .URL }}{{ .URL }}{{ end }}"
+
+[[blocks.segments]]
+foreground = "p:terminal-blue"
+type = "project"
+style = "plain"
+template = "{{ if .Error }}{{ .Error }}{{ else }}{{ if .Version }} {{.Version}}{{ end }} {{ if .Name }}{{ .Name }}{{ end }}{{ end }} "
+
+[[blocks.segments]]
 style = "plain"
 foreground = "p:closer"
 template = ""
@@ -68,7 +285,7 @@ alignment = "right"
 type = "rprompt"
 
 [[blocks.segments]]
-foreground = "p:pink"
+foreground = "p:celeste-blue"
 style = "plain"
 template = "  {{ .FormattedMs }} "
 type = "executiontime"
