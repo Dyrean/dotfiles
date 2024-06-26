@@ -10,6 +10,5 @@
 		unzip
 		unrar
 		rustup
-        ulauncher
 	];
 }
