@@ -7,12 +7,9 @@
 		nodePackages_latest.typescript-language-server
 		nodePackages_latest.yaml-language-server
 		marksman
-		rust-analyzer
 		nil
 		zls
 		gopls
 		luajitPackages.lua-lsp
-        nixpkgs-fmt
-        nil
 	];  
 }

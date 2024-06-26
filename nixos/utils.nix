@@ -1,6 +1,7 @@
 { pkgs, ... }:
 
 {
+
 	environment.systemPackages = with pkgs; [
 		gcc14
 		mold
@@ -9,5 +10,6 @@
 		unzip
 		unrar
 		rustup
+        ulauncher
 	];
 }
