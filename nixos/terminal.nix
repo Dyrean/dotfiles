@@ -33,7 +33,7 @@
 
 		vim
 		neovim
-		wezterm
+		alacritty
 		zellij
 		oh-my-posh
 		zoxide
