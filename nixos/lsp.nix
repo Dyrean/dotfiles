@@ -12,7 +12,7 @@
 		zls
 		gopls
 		luajitPackages.lua-lsp
-    nixpkgs-fmt
-    nixfmt
+        nixpkgs-fmt
+        nil
 	];  
 }

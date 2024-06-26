@@ -205,7 +205,7 @@ plugins {
 //   - detach (Default)
 //   - quit
 //
-// on_force_close "quit"
+on_force_close "quit"
 
 //  Send a request for a simplified ui (without arrow fonts) to plugins
 //  Options:
@@ -281,28 +281,12 @@ plugins {
 // Default: default
 //
 
-themes {
-    tokyonight_storm {
-        fg "#c0caf5"
-        bg "#292e42"
-        black "#1d202f"
-        red "#f7768e"
-        green "#9ece6a"
-        yellow "#e0af68"
-        blue "#7aa2f7"
-        magenta "#bb9af7"
-        cyan "#7dcfff"
-        white "#a9b1d6"
-        orange "#ff9e64"
-    }
-}
-
-theme "tokyonight_storm"
+theme "tokyo-night"
 
 // The name of the default layout to load on startup
 // Default: "default"
 //
-// default_layout "compact"
+default_layout "zjstatus"
 
 // Choose the mode that zellij uses when starting up.
 // Default: normal
