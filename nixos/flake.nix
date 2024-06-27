@@ -3,17 +3,6 @@
 
 	inputs = {
 		nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-		hyprland = {
-			url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
-			inputs.nixpkgs.follows = "nixpkgs";
-		};
-
-		# add git hooks to format nix code before commit
-		pre-commit-hooks = {
-			url = "github:cachix/pre-commit-hooks.nix";
-			inputs.nixpkgs.follows = "nixpkgs";
-		};
 	};
 
 	outputs = { nixpkgs, ... } @ inputs: {
@@ -39,10 +28,8 @@
 				./nix-settings.nix
 				./terminal.nix
 				./utils.nix
-				./programming.nix
 				./environment.nix
 				./security.nix
-				./lsp.nix
 				./virtualisation.nix
 				./dns.nix
 			];

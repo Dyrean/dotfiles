@@ -1,6 +1,4 @@
-{ ... }:
-
-{
+{ pkgs, ... }: {
 	# Enable the X11 windowing system.
 	services.xserver.enable = true;
 
@@ -10,4 +8,11 @@
 
 	# Enable touchpad support (enabled default in most desktopManager).
 	# services.xserver.libinput.enable = true;
+    
+    environment.systemPackages = with pkgs; [
+        gnome-extension-manager
+        nautilus-open-any-terminal
+        twitter-color-emoji
+        gnome.nautilus-python
+    ];
 }
