@@ -162,7 +162,7 @@ template = "󰥧 "
 foreground = "p:terminal-blue"
 type = "go"
 style = "plain"
-template = "‭ﳑ "
+template = " "
 
 [[blocks.segments]]
 foreground = "p:terminal-blue"
