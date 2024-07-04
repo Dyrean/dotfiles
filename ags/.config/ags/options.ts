@@ -162,6 +162,7 @@ const options = mkOptions(OPTIONS, {
                     "org.gnome.Nautilus",
                     "org.gnome.Calendar",
                     "spotify",
+                    "standard-notes"
                 ],
             ]),
         },
