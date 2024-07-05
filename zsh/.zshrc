@@ -84,3 +84,10 @@ alias neofetch="fastfetch"
 # Shell integrations
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
+
+# bun completions
+[ -s "/home/dyrean/.bun/_bun" ] && source "/home/dyrean/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
