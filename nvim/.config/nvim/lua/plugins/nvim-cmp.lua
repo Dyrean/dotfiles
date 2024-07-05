@@ -7,16 +7,4 @@ return {
       table.insert(opts.sources, { name = "emoji" })
     end,
   },
-  {
-    "hrsh7th/nvim-cmp",
-    opts = function()
-      local cmp = require("cmp")
-      cmp.setup({
-        sources = cmp.config.sources({
-          -- { name = "buffer" }, -- <- remove
-          { name = "nvim_lsp" },
-        }),
-      })
-    end,
-  },
 }
