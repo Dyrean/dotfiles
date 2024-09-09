@@ -32,16 +32,20 @@
   reword = commit --amend
   # Undo last commit but keep changed files in stage
   uncommit = reset --soft HEAD~1
+  undo = reset --soft HEAD~1
   # Remove file(s) from Git but not from disk
   untrack = rm --cache --
 
 [core]
   # Don't paginate output by default
-  pager = bat
+  pager = delta
   # Editor nvim
   editor = nvim
   # Don't consider trailing space change as a cause for merge conflicts
   whitespace = -trailing-space
+
+[delta]
+  line-numbers = true
 
 [diff]
   # Use better, descriptive initials (c, i, w) instead of a/b.

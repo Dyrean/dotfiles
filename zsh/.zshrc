@@ -96,3 +96,11 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # Turso
 export PATH="$PATH:/home/dyrean/.turso"
+
+# pnpm
+export PNPM_HOME="/home/dyrean/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
