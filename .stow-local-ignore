@@ -1,0 +1,5 @@
+LICENSE.*
+\.git
+\.gitignore
+README.*
+install\.sh
