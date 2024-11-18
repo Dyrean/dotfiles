@@ -84,7 +84,6 @@ alias cd="z"
 alias neofetch="fastfetch"
 
 # Shell integrations
-eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
 # bun completions
@@ -93,6 +92,10 @@ eval "$(zoxide init zsh)"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+# Go
+export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:/home/dyrean/go/bin
 
 # Turso
 export PATH="$PATH:/home/dyrean/.turso"
