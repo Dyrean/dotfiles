@@ -3,9 +3,6 @@ ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 export PATH=$HOME/.local/bin:$PATH
 
-# Tmux
-# if [ "$TMUX" = "" ]; then tmux; fi
-
 # Set Default Editor NVİM
 export EDITOR=nvim
 
@@ -17,9 +14,6 @@ fi
 
 # Source/Load zinit
 source "${ZINIT_HOME}/zinit.zsh"
-
-# Add in Oh My Posh
-eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/omp.toml)"
 
 # Add in zsh plugins
 zinit light zsh-users/zsh-completions
@@ -66,16 +60,6 @@ zstyle ":fzf-tab:complete:__zoxide_z:*" fzf-preview "ls --color $realpath"
 # Use fd instead of fzf
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 
-# To use it, copy the function into the configuration file of your respective shell. Then use yy instead of yazi to start.
-function yy() {
-	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
-	yazi "$@" --cwd-file="$tmp"
-	if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-		cd -- "$cwd"
-	fi
-	rm -f -- "$tmp"
-}
-
 # Aliases
 alias ls="eza --icons=always -a"
 alias vim="nvim"
@@ -93,19 +77,8 @@ eval "$(zoxide init zsh)"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-# Go
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:/home/dyrean/go/bin
+# uv completions
+eval "$(uv generate-shell-completion zsh)"
 
-# Turso
-export PATH="$PATH:/home/dyrean/.turso"
-
-# pnpm
-export PNPM_HOME="/home/dyrean/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
-
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Starship
+eval "$(starship init zsh)"

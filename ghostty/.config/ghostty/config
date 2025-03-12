@@ -1,0 +1,15 @@
+# Font settings
+font-size = 14
+font-family = "JetBrainsMono Nerd Font"
+
+# Window settings
+background-opacity = 0.9
+
+# Behavior settings
+confirm-close-surface = false
+clipboard-paste-protection = false
+unfocused-split-opacity = 1.0
+copy-on-select = clipboard
+
+# Theme
+theme=tokyonight
