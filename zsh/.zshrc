@@ -2,6 +2,7 @@
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 export PATH=$HOME/.local/bin:$PATH
+export PATH=$HOME/.cargo/bin:$PATH
 
 # Set Default Editor NVİM
 export EDITOR=nvim
@@ -64,8 +65,10 @@ export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 alias ls="eza --icons=always -a"
 alias vim="nvim"
 alias c="clear"
-alias cd="z"
 alias neofetch="fastfetch"
+alias nvm="fnm"
+alias cat="bat"
+alias fd="fdfind"
 
 # Shell integrations
 eval "$(zoxide init zsh)"
@@ -82,3 +85,17 @@ eval "$(uv generate-shell-completion zsh)"
 
 # Starship
 eval "$(starship init zsh)"
+
+# fnm
+FNM_PATH="/home/dyrean/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "`fnm env`"
+fi
+
+# pnpm
+export PNPM_HOME=$HOME/.local/share/pnpm
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac

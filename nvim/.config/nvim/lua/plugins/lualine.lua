@@ -1,6 +1,4 @@
 return {
     "nvim-lualine/lualine.nvim",
-    opts = function(_, opts)
-      opts.options.theme = "wallust"
-    end,
-  }
+    dependencies = { 'nvim-tree/nvim-web-devicons' }
+}
