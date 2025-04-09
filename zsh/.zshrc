@@ -67,7 +67,6 @@ alias vim="nvim"
 alias c="clear"
 alias neofetch="fastfetch"
 alias nvm="fnm"
-alias cat="bat"
 alias fd="fdfind"
 
 # Shell integrations
