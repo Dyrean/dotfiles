@@ -69,6 +69,19 @@ alias neofetch="fastfetch"
 alias nvm="fnm"
 alias fd="fdfind"
 
+alias gs="git status --short"
+alias ga="git add"
+alias gap="git add --patch"
+alias gc="git commit"
+alias gph="git push"
+alias gpl="git pull"
+alias gl="git log"
+alias gb="git branch"
+alias gis="git init"
+alias gcl="git clone"
+alias gd="git diff --output-indicator-new=' ' --output-indicator-old=' '"
+alias gds="git "
+
 # Shell integrations
 eval "$(zoxide init zsh)"
 

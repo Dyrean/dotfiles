@@ -1,0 +1,181 @@
+[user]
+  email = fcanbeyy@gmail.com
+  name = Fatih Canbey
+
+[github]
+  user = Dyrean
+
+[commit]
+  template = ~/.config/git/template
+  verbose = true
+
+[core]
+  autocrlf = input
+  editor = nvim
+  fsync = none
+  ignorecase = false
+  compression = 9
+  whitespace = error
+  preloadindex = true
+
+[advice]
+  addEmptyPathspec = false
+  pushNonFastForward = false
+  statusHints = false
+
+[blame]
+  coloring = highlightRecent
+  date = relative
+
+[diff]
+  mnemonicPrefix = true
+  wordRegex = .
+  submodule = log
+  tool = nvim
+  context = 3
+  renames = copies
+  interHunkContext = 10
+
+[init]
+  defaultBranch = main
+
+[log]
+  # Use abbrev SHAs whenever possible/relevant instead of full 40 chars
+  abbrevCommit = true
+  # Automatically --follow when given a single path
+  follow = true
+  # Disable decorate for reflog
+  # (because there is no dedicated `reflog` section available)
+  decorate = false
+  graphColors  = blue,yellow,cyan,magenta,green,red
+
+[status]
+  # Display submodule rev change summaries in status
+  submoduleSummary = true
+  # Recursively traverse untracked directories to display all contents
+  branch = true
+  short = true
+  showStash = true
+  showUntrackedFiles = all
+
+[pager]
+  diff = diff-so-fancy | $PAGER
+  branch = false  # no need to use pager for git branch
+  tag = false
+
+[push]
+  autoSetupRemote = true  # easier to push new branches
+  default = current  # push only current branch by default
+  followTags = true  # push also tags
+
+[pull]
+  rebase = true
+  default = current
+
+[submodule]
+  fetchJobs = 16
+
+[rebase]
+  autoStash = true
+  missingCommitsCheck = warn  # warn if rebasing with missing commits
+
+[pack]
+  threads = 0  # use all available threads
+  windowMemory = 1g  # use 1g of memory for pack window
+  packSizeLimit = 1g  # max size of a packfile
+
+[transfer]
+  fsckObjects = true
+
+[receive]
+  fsckObjects = true
+
+[fetch]
+  fsckObjects = true
+  recurseSubmodules = on-demand
+
+[branch]
+  sort = -committerdate
+
+[tag]
+  # Sort tags as version numbers whenever applicable, so 1.10.2 is AFTER 1.2.0.
+  sort = version:refname
+
+[color "blame"]
+  highlightRecent = black bold,1 year ago,white,1 month ago,default,7 days ago,blue
+
+[color]
+  status = auto
+  diff = auto
+  branch = auto
+  interactive = auto
+  grep = auto
+  ui = auto
+
+[color "branch"]
+  current  = magenta
+  local    = default
+  remote   = yellow
+  upstream = green
+  plain    = blue
+
+[color "diff"]
+  meta       = black bold
+  frag       = magenta
+  context    = white
+  whitespace = yellow reverse
+  old        = red
+
+[color.decorate]
+  HEAD = red
+  branch = blue
+  tag = yellow
+  remoteBranch = magenta
+
+[interactive]
+  diffFilter = diff-so-fancy --patch
+  singlekey = true
+
+[url "git@github.com:"]
+  insteadOf = "gh:"
+
+[url "git@github.com:Dyrean/"]
+  insteadOf = "dyrean:"
+
+[diff-so-fancy]
+  markEmptyLines = false
+
+[grep]
+  break = true
+  heading = true
+  lineNumber = true
+  # Consider most regexes to be ERE
+  extendedRegexp = true
+
+[alias]
+  # List available aliases
+  aliases = !git config --get-regexp alias | sed -re 's/alias\\.(\\S*)\\s(.*)$/\\0 = \\2/g'
+  # Command shortcuts
+  ci = commit
+  co = checkout
+  st = status
+  # Display tree-like log, because default log is a pain…
+  lg = log --graph --date=relative --pretty=tformat:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%an %ad)%Creset'
+  # Useful when you have to update your last commit
+  # with staged files without editing the commit message.
+  oops = commit --amend --no-edit
+  # Ensure that force-pushing won't lose someone else's work (only mine).
+  push-with-lease = push --force-with-lease
+  # Rebase won’t trigger hooks on each "replayed" commit.
+  # This is an ugly hack that will replay each commit during rebase with the
+  # standard `commit` command which will trigger hooks.
+  rebase-with-hooks = rebase -x 'git reset --soft HEAD~0 && git commit -C HEAD@{1}'
+  # List local commits that were not pushed to remote repository
+  review-local = "!git lg @{push}.."
+  # Edit last commit message
+  reword = commit --amend
+  # Undo last commit but keep changed files in stage
+  uncommit = reset --soft HEAD~0
+  undo = reset --soft HEAD~0
+  # Remove file(s) from Git but not from disk
+  untrack = rm --cache --

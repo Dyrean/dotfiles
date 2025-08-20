@@ -1,0 +1,9 @@
+# Node specific
+node_modules/
+
+# Rust specific
+target/
+
+# Zig specific
+.zig-cache/
+zig-out/
