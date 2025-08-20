@@ -62,25 +62,43 @@ zstyle ":fzf-tab:complete:__zoxide_z:*" fzf-preview "ls --color $realpath"
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 
 # Aliases
-alias ls="eza --icons=always -a"
 alias vim="nvim"
 alias c="clear"
 alias neofetch="fastfetch"
 alias nvm="fnm"
 alias fd="fdfind"
 
-alias gs="git status --short"
-alias ga="git add"
-alias gap="git add --patch"
-alias gc="git commit"
-alias gph="git push"
-alias gpl="git pull"
-alias gl="git log"
-alias gb="git branch"
-alias gis="git init"
-alias gcl="git clone"
-alias gd="git diff --output-indicator-new=' ' --output-indicator-old=' '"
-alias gds="git "
+# Aliases: ls
+alias l='eza -1A --group-directories-first --color=always --git-ignore'
+alias ls='l'
+alias la='l -l --time-style="+%Y-%m-%d %H:%M" --no-permissions --octal-permissions'
+alias tree='l --tree'
+
+# Aliases: git
+alias ga='git add'
+alias gap='ga --patch'
+alias gb='git branch'
+alias gba='gb --all'
+alias gc='git commit'
+alias gca='gc --amend --no-edit'
+alias gce='gc --amend'
+alias gco='git checkout'
+alias gcl='git clone --recursive'
+alias gd='git diff --output-indicator-new=" " --output-indicator-old=" "'
+alias gds='gd --staged'
+alias gi='git init'
+alias gl='git log --graph --all --pretty=format:"%C(magenta)%h %C(white) %an  %ar%C(auto)  %D%n%s%n"'
+alias gm='git merge'
+alias gn='git checkout -b'  # new branch
+alias gp='git push'
+alias gr='git reset'
+alias gs='git status --short'
+alias gu='git pull'
+
+# Aliases: docker
+alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
+alias dl='docker logs --tail=100'
+alias dc='docker compose'
 
 # Shell integrations
 eval "$(zoxide init zsh)"
