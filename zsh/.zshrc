@@ -69,7 +69,7 @@ alias nvm="fnm"
 alias fd="fdfind"
 
 # Aliases: ls
-alias l='eza -1A --group-directories-first --color=always --git-ignore'
+alias l="eza --icons=always --group-directories-first -a"
 alias ls='l'
 alias la='l -l --time-style="+%Y-%m-%d %H:%M" --no-permissions --octal-permissions'
 alias tree='l --tree'
