@@ -9,7 +9,6 @@ background-opacity = 0.9
 confirm-close-surface = false
 clipboard-paste-protection = false
 unfocused-split-opacity = 1.0
-copy-on-select = clipboard
 
 # Theme
 theme=tokyonight

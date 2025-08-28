@@ -26,7 +26,6 @@ zinit light Aloxaf/fzf-tab
 zinit snippet OMZP::git
 zinit snippet OMZP::sudo
 zinit snippet OMZP::command-not-found
-zinit load atuinsh/atuin
 
 # Load completions
 autoload -Uz compinit && compinit
