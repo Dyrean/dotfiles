@@ -65,7 +65,6 @@ alias vim="nvim"
 alias c="clear"
 alias neofetch="fastfetch"
 alias nvm="fnm"
-alias fd="fdfind"
 
 # Aliases: ls
 alias l="eza --icons=always --group-directories-first -a"
