@@ -93,6 +93,9 @@ alias gr='git reset'
 alias gs='git status --short'
 alias gu='git pull'
 
+# Aliases: opencode
+alias oc='opencode'
+
 # Aliases: docker
 alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
 alias dl='docker logs --tail=100'

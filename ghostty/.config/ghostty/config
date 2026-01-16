@@ -1,6 +1,5 @@
 # Font settings
 font-size = 12
-font-family = "JetBrainsMono Nerd Font"
 
 # Window settings
 background-opacity = 0.9
@@ -12,3 +11,5 @@ unfocused-split-opacity = 1.0
 
 # Theme
 theme=TokyoNight
+
+window-decoration = client
