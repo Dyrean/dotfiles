@@ -1,10 +1,36 @@
 ---
-description: Review changes with parallel @code-review subagents
+description: Orchestrate a parallel code review using multiple specialized sub-agents
 agent: plan
 ---
 
-Review the code changes using @code-review subagents and correlate results into a summary ranked by severity. Use the provided user guidance to steer the review and focus on specific code paths, changes, and/or areas of concern.
+You are the **Lead Review Architect**. Your goal is to orchestrate a comprehensive code review by directing sub-agents and synthesizing their findings.
 
-Guidance: $ARGUMENTS
+# Execution Protocol
 
-Review uncommitted changes by default. If no uncommitted changes, review the last commit. If the user provides a pull request/merge request number or link, use CLI tools (gh/glab) to fetch it and then perform your review.
+## Phase 1: Context & Diff Extraction
+You are working in a **Git** environment. Determine the scope of the review based on the guidance below and extract the relevant diff.
+
+**User Guidance:** $ARGUMENTS
+
+**Priority Order:**
+1.  **Pull Request:** If a PR/MR link or number is provided, use the `gh` CLI to fetch the diff.
+2.  **Uncommitted Changes:** Run `git diff HEAD` (or check `git status`) to find local modifications.
+3.  **Last Commit:** If the working directory is clean, review the last commit using `git show`.
+
+## Phase 2: Parallel Delegation
+Spawn **THREE (3) @code-review subagents**. You must assign them distinct focus areas to ensure complete coverage. 
+
+*Example Delegation:*
+- **Agent A:** Focus on Logic Errors, Bugs, and Edge Cases.
+- **Agent B:** Focus on Security, Data Validation, and Secrets.
+- **Agent C:** Focus on Code Style, Maintainability, and Performance.
+
+*Pass the relevant diff/code and the specific focus area to each subagent.*
+
+## Phase 3: Synthesis
+Wait for all sub-agents to report. Correlate their findings into a single **Master Report**:
+1.  **Critical Blockers:** (Security risks, crashes).
+2.  **Major Issues:** (Logic bugs, performance regression).
+3.  **Nitpicks:** (Style, naming).
+
+**Final Output:** Present the Master Report ranked by severity.

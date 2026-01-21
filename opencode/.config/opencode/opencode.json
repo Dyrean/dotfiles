@@ -11,7 +11,7 @@
             "secrets/*": "deny"
         }
     },
-    "plugin": ["opencode-antigravity-auth@beta"],
+    "plugin": ["opencode-antigravity-auth@beta", "opencode-handoff", "@mohak34/opencode-notifier@latest"],
     "mcp": {
         "nuxt": {
             "type": "remote",
