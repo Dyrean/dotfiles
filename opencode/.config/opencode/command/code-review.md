@@ -33,4 +33,6 @@ Wait for all sub-agents to report. Correlate their findings into a single **Mast
 2.  **Major Issues:** (Logic bugs, performance regression).
 3.  **Nitpicks:** (Style, naming).
 
+## Phase 4: Save Master Report
 **Final Output:** Present the Master Report ranked by severity.
+Save the master report to `.agent/session/code-review/<timestamp>.md`.

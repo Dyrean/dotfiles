@@ -19,6 +19,8 @@ skill({ name: 'agent-browser' })
 
 3. **Skill Handover**: STRICTLY follow the `agent-browser` skill instructions to construct the correct CLI command. Focus on reliability and handling anti-bot measures if mentioned in the skill.
 
+4. **Save Logs**: Save the logs to `.agent/session/agent-browser/<timestamp>.log` or if screenshot etc. should be greate for logging purposes save it to `.agent/session/agent-browser/<timestamp>.<extension>`.
+
 <user-request>
 $ARGUMENTS
 </user-request>

@@ -29,3 +29,6 @@ Your final output should be the execution of the git command, but you must first
 - If there are **no changes**, output: "No changes detected to commit."
 - Never include sensitive keys or passwords in a commit message.
 - Limit the subject line to 50 characters.
+
+# Save Logs
+Save the summary of changes to `.agent/session/commit/<timestamp>.md`.

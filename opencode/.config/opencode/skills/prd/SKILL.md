@@ -51,7 +51,7 @@ Keep questions concise. 5-7 at most.
 
 ## Output Format
 
-Save to `prd-<feature-name>.md` (project root):
+Save to `.agent/plans/<feature-name>.md` (project root):
 
 ```markdown
 # PRD: <Feature Name>

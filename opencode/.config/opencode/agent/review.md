@@ -1,5 +1,5 @@
 ---
-description: rigorous code reviewer focusing on logic, security, and maintainability
+description: Rigorous code reviewer focusing on logic, security, and maintainability
 mode: subagent
 temperature: 0.1
 tools:
