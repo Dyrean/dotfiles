@@ -11,3 +11,9 @@ unfocused-split-opacity = 1.0
 
 # Theme
 theme=TokyoNight
+
+# Updates
+auto-update-channel = tip
+
+# Always show ghostty as the title
+title = ghostty

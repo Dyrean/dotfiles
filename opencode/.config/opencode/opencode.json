@@ -9,9 +9,69 @@
             "*.env.*": "deny",
             "*.envrc": "deny",
             "secrets/*": "deny"
-        }
+        },
+        "bash": {
+            "*": "ask",
+            "bun*": "allow",
+            "cargo*": "allow",
+            "cat*": "allow",
+            "cloc*": "allow",
+            "cp*": "allow",
+            "date*": "allow",
+            "diff*": "allow",
+            "doggo*": "allow",
+            "dot*": "allow",
+            "fd*": "allow",
+            "find*": "allow",
+            "fnm*": "allow",
+            "fzf*": "allow",
+            "git*": "allow",
+            "git push*": "ask",
+            "git push": "ask",
+            "go*": "allow",
+            "grep*": "allow",
+            "gsed*": "allow",
+            "head*": "allow",
+            "jq*": "allow",
+            "ls*": "allow",
+            "mkdir*": "allow",
+            "npm*": "allow",
+            "pnpm*": "allow",
+            "pwd": "allow",
+            "rg*": "allow",
+            "sed*": "allow",
+            "sg*": "allow",
+            "shellcheck*": "allow",
+            "sort*": "allow",
+            "stow*": "allow",
+            "stylua*": "allow",
+            "tail*": "allow",
+            "tar*": "allow",
+            "touch*": "allow",
+            "tr*": "allow",
+            "tree*": "allow",
+            "tsc*": "allow",
+            "turbo*": "allow",
+            "uniq*": "allow",
+            "unzip*": "allow",
+            "vite*": "allow",
+            "vitest*": "allow",
+            "wc*": "allow",
+            "which*": "allow",
+            "xargs*": "allow",
+            "yarn*": "allow",
+            "z*": "allow",
+            "zip*": "allow",
+            "zoxide*": "allow"
+        },
+        "edit": "allow",
+        "webfetch": "ask"
     },
-    "plugin": ["opencode-antigravity-auth@beta", "opencode-handoff", "@mohak34/opencode-notifier"],
+    "plugin": [
+        "opencode-antigravity-auth",
+        "opencode-handoff",
+        "@mohak34/opencode-notifier"
+    ],
     "mcp": {
         "nuxt": {
             "type": "remote",
@@ -36,6 +96,11 @@
         "websearch": {
             "type": "remote",
             "url": "https://mcp.exa.ai/mcp",
+            "enabled": true
+        },
+        "overseer": {
+            "type": "local",
+            "command": ["os", "mcp"],
             "enabled": true
         }
     },
