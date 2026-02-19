@@ -1,105 +1,120 @@
 {
-    "$schema": "https://opencode.ai/config.json",
-    "autoupdate": true,
-    "theme": "tokyonight",
-    "permission": {
-        "read": {
-            "*": "allow",
-            "*.env": "deny",
-            "*.env.*": "deny",
-            "*.envrc": "deny",
-            "secrets/*": "deny"
-        },
-        "bash": {
-            "*": "ask",
-            "bun*": "allow",
-            "cargo*": "allow",
-            "cat*": "allow",
-            "cloc*": "allow",
-            "cp*": "allow",
-            "date*": "allow",
-            "diff*": "allow",
-            "doggo*": "allow",
-            "dot*": "allow",
-            "fd*": "allow",
-            "find*": "allow",
-            "fnm*": "allow",
-            "fzf*": "allow",
-            "git*": "allow",
-            "git push*": "ask",
-            "git push": "ask",
-            "git commit*": "ask",
-            "git commit": "ask",
-            "go*": "allow",
-            "grep*": "allow",
-            "gsed*": "allow",
-            "head*": "allow",
-            "jq*": "allow",
-            "ls*": "allow",
-            "mkdir*": "allow",
-            "npm*": "allow",
-            "pnpm*": "allow",
-            "pwd": "allow",
-            "rg*": "allow",
-            "sed*": "allow",
-            "sg*": "allow",
-            "shellcheck*": "allow",
-            "sort*": "allow",
-            "stow*": "allow",
-            "stylua*": "allow",
-            "tail*": "allow",
-            "tar*": "allow",
-            "touch*": "allow",
-            "tr*": "allow",
-            "tree*": "allow",
-            "tsc*": "allow",
-            "turbo*": "allow",
-            "uniq*": "allow",
-            "unzip*": "allow",
-            "vite*": "allow",
-            "vitest*": "allow",
-            "wc*": "allow",
-            "which*": "allow",
-            "xargs*": "allow",
-            "yarn*": "allow",
-            "z*": "allow",
-            "zip*": "allow",
-            "zoxide*": "allow"
-        },
-        "edit": "allow",
-        "webfetch": "ask"
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": true,
+  "theme": "tokyonight",
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.envrc": "deny",
+      "secrets/*": "deny"
     },
-    "plugin": ["@mohak34/opencode-notifier", "opencode-gemini-auth@latest"],
-    "mcp": {
-        "nuxt": {
-            "type": "remote",
-            "url": "https://nuxt.com/mcp",
-            "enabled": true
-        },
-        "nuxt-ui": {
-            "type": "remote",
-            "url": "https://ui.nuxt.com/mcp",
-            "enabled": true
-        },
-        "context7": {
-            "type": "remote",
-            "url": "https://mcp.context7.com/mcp",
-            "enabled": true
-        },
-        "grep_app": {
-            "type": "remote",
-            "url": "https://mcp.grep.app",
-            "enabled": true
-        },
-        "websearch": {
-            "type": "remote",
-            "url": "https://mcp.exa.ai/mcp",
-            "enabled": true
-        },
-        "overseer": {
-            "type": "local",
-            "command": ["os", "mcp"],
-            "enabled": true
-        }
+    "bash": {
+      "*": "ask",
+      "bun*": "allow",
+      "cargo*": "allow",
+      "cat*": "allow",
+      "cloc*": "allow",
+      "cp*": "allow",
+      "date*": "allow",
+      "diff*": "allow",
+      "doggo*": "allow",
+      "dot*": "allow",
+      "fd*": "allow",
+      "find*": "allow",
+      "fnm*": "allow",
+      "fzf*": "allow",
+      "git*": "allow",
+      "git push*": "ask",
+      "git push": "ask",
+      "git commit*": "ask",
+      "git commit": "ask",
+      "go*": "allow",
+      "grep*": "allow",
+      "gsed*": "allow",
+      "head*": "allow",
+      "jq*": "allow",
+      "ls*": "allow",
+      "mkdir*": "allow",
+      "npm*": "allow",
+      "pnpm*": "allow",
+      "pwd": "allow",
+      "rg*": "allow",
+      "sed*": "allow",
+      "sg*": "allow",
+      "shellcheck*": "allow",
+      "sort*": "allow",
+      "stow*": "allow",
+      "stylua*": "allow",
+      "tail*": "allow",
+      "tar*": "allow",
+      "touch*": "allow",
+      "tr*": "allow",
+      "tree*": "allow",
+      "tsc*": "allow",
+      "turbo*": "allow",
+      "uniq*": "allow",
+      "unzip*": "allow",
+      "vite*": "allow",
+      "vitest*": "allow",
+      "wc*": "allow",
+      "which*": "allow",
+      "xargs*": "allow",
+      "yarn*": "allow",
+      "z*": "allow",
+      "zip*": "allow",
+      "zoxide*": "allow"
+    },
+    "edit": "allow",
+    "webfetch": "ask"
+  },
+  "plugin": [
+    "@mohak34/opencode-notifier",
+    "opencode-gemini-auth@latest"
+  ],
+  "mcp": {
+    "nuxt": {
+      "type": "remote",
+      "url": "https://nuxt.com/mcp",
+      "enabled": true
+    },
+    "nuxt-ui": {
+      "type": "remote",
+      "url": "https://ui.nuxt.com/mcp",
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "grep_app": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
+    },
+    "websearch": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "enabled": true
+    },
+    "overseer": {
+      "type": "local",
+      "command": [
+        "os",
+        "mcp"
+      ],
+      "enabled": true
+    },
+    "pencil": {
+      "command": [
+        "/home/dyrean/.antigravity/extensions/highagency.pencildev-0.6.26-universal/out/mcp-server-linux-x64",
+        "--app",
+        "antigravity"
+      ],
+      "enabled": true,
+      "type": "local"
     }
+  }
 }
