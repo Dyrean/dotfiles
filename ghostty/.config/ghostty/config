@@ -14,6 +14,3 @@ theme=TokyoNight
 
 # Updates
 auto-update-channel = tip
-
-# Always show ghostty as the title
-title = ghostty

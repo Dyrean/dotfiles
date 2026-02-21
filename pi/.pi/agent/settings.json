@@ -1,12 +1,27 @@
 {
   "lastChangelogVersion": "0.54.0",
-  "defaultProvider": "google-antigravity",
-  "defaultModel": "claude-opus-4-6-thinking",
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "google-gemini-cli",
+  "defaultModel": "gemini-3-flash-preview",
+  "defaultThinkingLevel": "off",
   "theme": "catppuccin-macchiato",
   "packages": [
     "npm:pi-mcp-adapter",
-    "npm:pi-subagents"
+    "npm:pi-subagents",
+    "npm:pi-mermaid"
   ],
-  "hideThinkingBlock": true
+  "hideThinkingBlock": true,
+  "notification": {
+    "enabled": true,
+    "sound": {
+      "enabled": true,
+      "player": "auto"
+    },
+    "toast": {
+      "enabled": false
+    },
+    "events": {
+      "agentEnd": true,
+      "sessionStart": true
+    }
+  }
 }

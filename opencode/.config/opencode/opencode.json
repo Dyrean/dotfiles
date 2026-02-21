@@ -99,14 +99,6 @@
       "url": "https://mcp.exa.ai/mcp",
       "enabled": true
     },
-    "overseer": {
-      "type": "local",
-      "command": [
-        "os",
-        "mcp"
-      ],
-      "enabled": true
-    },
     "pencil": {
       "command": [
         "/home/dyrean/.antigravity/extensions/highagency.pencildev-0.6.26-universal/out/mcp-server-linux-x64",

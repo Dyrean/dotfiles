@@ -6,3 +6,4 @@ install\.sh
 
 auth.json
 pi/**/sessions/**
+pi/**/mcp-cache.json

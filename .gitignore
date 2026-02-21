@@ -5,3 +5,4 @@ bin/.local/bin
 
 auth.json
 pi/**/sessions/**
+pi/**/mcp-cache.json
