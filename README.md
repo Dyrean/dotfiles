@@ -12,32 +12,48 @@ My personal dotfiles for various tools and applications. These configurations ar
 - **Version Control**: Git configuration and aliases
 - **Prompt**: Starship prompt configuration
 - **System Info**: Fastfetch configuration
+- **Coding Agents**: OpenCode and Pi configurations
 
 ## 🚀 Installation
 
 ### Prerequisites
 
-- GNU Stow
+- [GNU Stow](https://www.gnu.org/software/stow/)
+- [Just](https://github.com/casey/just) command runner
 - Git
-- Zsh (optional, but recommended)
 
 ### Quick Start
 
-1. Clone this repository to your home directory:
+1. Clone this repository:
    ```bash
    git clone https://github.com/yourusername/dotfiles.git ~/dotfiles
    cd ~/dotfiles
    ```
 
-2. Install the configurations using the provided Makefile:
+2. Stow all configurations:
    ```bash
-   make install
+   just all
    ```
 
-   Or manually stow each configuration:
+3. Or install a specific package:
    ```bash
-   stow zsh nvim git starship ghostty fastfetch
+   just install nvim
    ```
+
+## 📦 Usage
+
+```bash
+just                    # Show available commands
+just all                # Restow all packages
+just install nvim git   # Install one or more packages
+just uninstall nvim     # Uninstall one or more packages
+just dry-run nvim       # Preview what install would do
+just adopt nvim         # Adopt existing files into a package
+just init alacritty     # Scaffold a new package directory
+just delete             # Remove all symlinks (with confirmation)
+just list               # List available packages
+just status             # Dry-run showing what would be stowed
+```
 
 ## 🔧 Customization
 

@@ -3,3 +3,6 @@ LICENSE
 \.gitignore
 README.*
 install\.sh
+
+auth.json
+pi/**/sessions/**
