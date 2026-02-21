@@ -180,8 +180,27 @@ function playSound(settings: NotificationSettings): void {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 
+let isFocused = true;
+let focusReportingSupported = false;
+let lastActivityTime = 0;
+
+function shouldNotify(): boolean {
+	const now = Date.now();
+	const recentlyActive = now - lastActivityTime < 5000; // 5 second grace period
+
+	// If the terminal supports focus reporting, we prioritize the actual focus state.
+	// Otherwise, we fall back to checking recent keyboard activity.
+	if (focusReportingSupported) {
+		return !isFocused && !recentlyActive;
+	}
+
+	return !recentlyActive;
+}
+
 function notify(title: string, body: string, settings: NotificationSettings): void {
 	if (!settings.enabled) return;
+	if (!shouldNotify()) return;
+
 	if (settings.toast.enabled) {
 		sendNotification(title, body);
 	}
@@ -193,15 +212,51 @@ export default function (pi: ExtensionAPI) {
 	// Changes to settings.json require /reload or a restart.
 	const settings = loadSettings();
 
+	// Enable focus reporting (OSC 1004)
+	process.stdout.write("\x1b[?1004h");
+
+	pi.on("session_shutdown", () => {
+		// Disable focus reporting on exit
+		process.stdout.write("\x1b[?1004l");
+	});
+
+	pi.on("session_start", async (_event, ctx) => {
+		if (settings.events.sessionStart) {
+			notify("Pi", "Idle — waiting for input", settings);
+		}
+
+		// Track focus and activity
+		if (ctx.hasUI) {
+			ctx.ui.onTerminalInput((data) => {
+				lastActivityTime = Date.now();
+
+				if (data === "\x1b[I") {
+					// Focus Gained
+					focusReportingSupported = true;
+					isFocused = true;
+					return { consume: true };
+				}
+				if (data === "\x1b[O") {
+					// Focus Lost
+					focusReportingSupported = true;
+					isFocused = false;
+					return { consume: true };
+				}
+
+				return undefined;
+			});
+		}
+	});
+
 	pi.on("agent_end", async () => {
 		if (settings.events.agentEnd) {
 			notify("Pi", "Ready for input", settings);
 		}
 	});
 
-	pi.on("session_start", async () => {
-		if (settings.events.sessionStart) {
-			notify("Pi", "Idle — waiting for input", settings);
-		}
+	// Support ad-hoc notifications via the event bus
+	pi.events.on("ui:notify", (data) => {
+		const { title, message } = data as { title?: string; message: string };
+		notify(title || "Pi", message, settings);
 	});
 }

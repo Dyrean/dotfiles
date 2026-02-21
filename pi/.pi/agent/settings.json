@@ -8,7 +8,7 @@
     "npm:pi-mcp-adapter",
     "npm:pi-subagents",
     "npm:pi-mermaid",
-    "npm:@aliou/pi-guardrails",
+    "npm:@aliou/pi-guardrails"
   ],
   "hideThinkingBlock": true,
   "notification": {

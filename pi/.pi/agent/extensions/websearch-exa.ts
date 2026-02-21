@@ -65,6 +65,8 @@ interface WebSearchDetails {
 	fullOutputPath?: string;
 }
 
+const tempDirsToCleanup = new Set<string>();
+
 function getSearchArguments(params: WebSearchParams): ExaSearchArguments {
 	return {
 		query: params.query,
@@ -112,6 +114,16 @@ function parseExaResponse(responseText: string): string {
 
 export default function (pi: ExtensionAPI) {
 	const currentYear = new Date().getFullYear();
+
+	pi.on("session_shutdown", () => {
+		const fs = require("node:fs");
+		for (const dir of tempDirsToCleanup) {
+			try {
+				fs.rmSync(dir, { recursive: true, force: true });
+			} catch {}
+		}
+		tempDirsToCleanup.clear();
+	});
 
 	pi.registerTool({
 		name: "websearch",
@@ -193,6 +205,7 @@ export default function (pi: ExtensionAPI) {
 				const tempDir = mkdtempSync(join(tmpdir(), "pi-websearch-"));
 				const tempFile = join(tempDir, "full-output.txt");
 				writeFileSync(tempFile, output, "utf8");
+				tempDirsToCleanup.add(tempDir);
 
 				details.truncated = true;
 				details.fullOutputPath = tempFile;

@@ -74,6 +74,8 @@ interface NormalizedOutput {
   fullOutputPath?: string;
 }
 
+const tempDirsToCleanup = new Set<string>();
+
 function normalizePath(rawPath: string | undefined): string {
   if (!rawPath) {
     return ".";
@@ -107,6 +109,7 @@ function truncateOutputIfNeeded(output: string, tempPrefix: string): NormalizedO
   const tempDir = mkdtempSync(join(tmpdir(), tempPrefix));
   const tempFile = join(tempDir, "full-output.txt");
   writeFileSync(tempFile, output, "utf8");
+  tempDirsToCleanup.add(tempDir);
 
   return {
     output:
@@ -165,6 +168,16 @@ async function runAstGrep(
 }
 
 export default function (pi: ExtensionAPI) {
+  pi.on("session_shutdown", () => {
+    const fs = require("node:fs");
+    for (const dir of tempDirsToCleanup) {
+      try {
+        fs.rmSync(dir, { recursive: true, force: true });
+      } catch {}
+    }
+    tempDirsToCleanup.clear();
+  });
+
   pi.registerTool({
     name: "ast_grep_search",
     label: "AST Grep Search",

@@ -133,7 +133,7 @@ export default function lspExtension(pi: ExtensionAPI) {
         overlayOptions: {
           anchor: "center",
           width: 82,
-          maxWidth: "95%",
+          minWidth: 40,
           maxHeight: "80%",
           margin: 1,
         },

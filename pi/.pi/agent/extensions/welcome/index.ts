@@ -1,14 +1,15 @@
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { isKeyRelease } from "@mariozechner/pi-tui";
 
-import { getModelDisplayName, getModelProviderName } from "../../prelude/model.js";
+import { getModelDisplayName, getModelProviderName } from "../../prelude/model.ts";
 import {
   WelcomeComponent,
   WelcomeHeader,
   discoverLoadedCounts,
   discoverMcpServerSummary,
   getRecentSessions,
-} from "./screen.js";
+  resetDiscoveryCaches,
+} from "./screen.ts";
 
 type QuietStartupContext = ExtensionContext & {
   settingsManager?: {
@@ -157,7 +158,7 @@ export default function welcomeMenu(pi: ExtensionAPI) {
             mcpSummary,
           );
 
-          let countdown = 30;
+          let countdown = 10;
           let dismissed = false;
           let interval: ReturnType<typeof setInterval>;
 
@@ -217,6 +218,8 @@ export default function welcomeMenu(pi: ExtensionAPI) {
 
   pi.on("session_start", async (_event, ctx) => {
     if (!ctx.hasUI) return;
+
+    resetDiscoveryCaches();
 
     if (isQuietStartup(ctx)) {
       setupWelcomeHeader(ctx);

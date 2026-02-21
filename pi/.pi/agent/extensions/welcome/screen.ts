@@ -1,11 +1,11 @@
 import { readdirSync, existsSync, readFileSync, statSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join, basename, dirname } from "node:path";
 import type { Component } from "@mariozechner/pi-tui";
 import { visibleWidth } from "@mariozechner/pi-tui";
-import { getHomeDir } from "../../prelude/environment.js";
-import { ansiBold } from "../../prelude/ui/ansi.js";
-import { centerAnsiText, fitAnsiToWidth } from "../../prelude/ui/layout.js";
-import { ansi, fgOnly, getFgAnsiCode } from "./colors.js";
+import { getHomeDir } from "../../prelude/environment.ts";
+import { ansiBold } from "../../prelude/ui/ansi.ts";
+import { centerAnsiText, fitAnsiToWidth } from "../../prelude/ui/layout.ts";
+import { ansi, fgOnly, getFgAnsiCode } from "./colors.ts";
 
 export interface RecentSession {
   name: string;
@@ -51,6 +51,16 @@ type CacheEntry<T> = {
 let loadedCountsCache: CacheEntry<LoadedCounts> | null = null;
 let recentSessionsCache: (CacheEntry<RecentSession[]> & { maxCount: number }) | null = null;
 let mcpServerSummaryCache: CacheEntry<McpServerSummary> | null = null;
+
+/**
+ * Reset all discovery caches. Call on session_start / session_switch
+ * to avoid stale data after /reload.
+ */
+export function resetDiscoveryCaches(): void {
+  loadedCountsCache = null;
+  recentSessionsCache = null;
+  mcpServerSummaryCache = null;
+}
 
 function safeReadDir(dir: string) {
   try {
@@ -378,7 +388,7 @@ const EMPTY_MCP_SUMMARY: McpServerSummary = {
 
 export class WelcomeComponent implements Component {
   private data: WelcomeData;
-  private countdown: number = 30;
+  private countdown: number = 10;
 
   constructor(
     modelName: string,
@@ -463,7 +473,29 @@ export class WelcomeHeader implements Component {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Walk ancestor directories from `startDir` up to the filesystem root
+ * (stopping at git repo root if found). Returns dirs from startDir's parent upwards.
+ */
+function getAncestorDirs(startDir: string): string[] {
+  const ancestors: string[] = [];
+  let dir = dirname(startDir);
+
+  while (dir !== dirname(dir)) {
+    ancestors.push(dir);
+
+    // Stop at git repo root (Pi stops walking at repo boundary)
+    if (existsSync(join(dir, ".git"))) break;
+
+    dir = dirname(dir);
+  }
+
+  return ancestors;
+}
+
+/**
  * Discover loaded counts by scanning filesystem.
+ * Matches Pi 0.54.0+ discovery paths including .agents/ locations and
+ * ancestor directory AGENTS.md files.
  */
 export function discoverLoadedCounts(): LoadedCounts {
   const now = Date.now();
@@ -479,18 +511,29 @@ export function discoverLoadedCounts(): LoadedCounts {
   let skills = 0;
   let promptTemplates = 0;
 
-  const agentsMdPaths = [
+  // --- Context files (AGENTS.md) ---
+  // Fixed locations
+  const agentsMdPaths = new Set([
     join(homeDir, ".pi", "agent", "AGENTS.md"),
+    join(homeDir, ".agents", "AGENTS.md"),
     join(homeDir, ".claude", "AGENTS.md"),
     join(cwd, "AGENTS.md"),
     join(cwd, ".pi", "AGENTS.md"),
+    join(cwd, ".agents", "AGENTS.md"),
     join(cwd, ".claude", "AGENTS.md"),
-  ];
+  ]);
+
+  // Ancestor AGENTS.md files (Pi walks up from cwd to git root / fs root)
+  for (const ancestorDir of getAncestorDirs(cwd)) {
+    agentsMdPaths.add(join(ancestorDir, "AGENTS.md"));
+    agentsMdPaths.add(join(ancestorDir, ".agents", "AGENTS.md"));
+  }
 
   for (const path of agentsMdPaths) {
     if (existsSync(path)) contextFiles++;
   }
 
+  // --- Extensions ---
   const extensionDirs = [
     join(homeDir, ".pi", "agent", "extensions"),
     join(cwd, "extensions"),
@@ -524,11 +567,20 @@ export function discoverLoadedCounts(): LoadedCounts {
     }
   }
 
+  // --- Skills ---
+  // Pi 0.54.0+ discovers skills from .pi/skills, .agents/skills, and ancestors
   const skillDirs = [
     join(homeDir, ".pi", "agent", "skills"),
+    join(homeDir, ".agents", "skills"),
     join(cwd, ".pi", "skills"),
+    join(cwd, ".agents", "skills"),
     join(cwd, "skills"),
   ];
+
+  // Also check ancestor .agents/skills directories
+  for (const ancestorDir of getAncestorDirs(cwd)) {
+    skillDirs.push(join(ancestorDir, ".agents", "skills"));
+  }
 
   const countedSkills = new Set<string>();
 
@@ -548,8 +600,10 @@ export function discoverLoadedCounts(): LoadedCounts {
 
   const templateDirs = [
     join(homeDir, ".pi", "agent", "commands"),
+    join(homeDir, ".agents", "commands"),
     join(homeDir, ".claude", "commands"),
     join(cwd, ".pi", "commands"),
+    join(cwd, ".agents", "commands"),
     join(cwd, ".claude", "commands"),
   ];
 

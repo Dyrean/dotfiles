@@ -1,43 +1,87 @@
 /**
- * Inter-extension event bus example.
+ * Global Event Bus & Status Manager
  *
- * Shows pi.events for communication between extensions. One extension
- * can emit events that other extensions listen to.
- *
- * Usage: /emit [event-name] [data] - emit an event on the bus
+ * This extension acts as a central hub for inter-extension communication.
+ * It maintains a global state by listening to events from other extensions
+ * and updates the UI (footer status) accordingly.
  */
 
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 
+interface GlobalState {
+  discoveredAgents: string[];
+  lastNotification?: { title: string; message: string; timestamp: number };
+  lspStatus: "starting" | "ready" | "error" | "off";
+}
+
 export default function (pi: ExtensionAPI) {
-    // Store ctx for use in event handler
-    let currentCtx: ExtensionContext | undefined;
+  const state: GlobalState = {
+    discoveredAgents: [],
+    lspStatus: "off",
+  };
 
-    pi.on("session_start", async (_event, ctx) => {
-        currentCtx = ctx;
-    });
+  let currentCtx: ExtensionContext | undefined;
 
-    // Listen for events from other extensions
-    pi.events.on("my:notification", (data) => {
-        const { message, from } = data as { message: string; from: string };
-        currentCtx?.ui.notify(`Event from ${from}: ${message}`, "info");
-    });
+  const updateStatus = () => {
+    if (!currentCtx) return;
 
-    // Command to emit events (emits "my:notification" which the listener above receives)
-    pi.registerCommand("emit", {
-        description: "Emit my:notification event (usage: /emit message)",
-        handler: async (args, _ctx) => {
-            const message = args.trim() || "hello";
-            pi.events.emit("my:notification", { message, from: "/emit command" });
-            // Listener above will show the notification
-        },
-    });
+    // Update the footer status line for this extension
+    const agentCount = state.discoveredAgents.length;
+    const agentStatus = agentCount > 0 ? `[${agentCount} agents]` : "";
+    const lspStatus = state.lspStatus !== "off" ? `[LSP: ${state.lspStatus}]` : "";
 
-    // Example: emit on session start
-    pi.on("session_start", async () => {
-        pi.events.emit("my:notification", {
-            message: "Session started",
-            from: "event-bus-example",
-        });
-    });
+    currentCtx.ui.setStatus("bus", `${agentStatus} ${lspStatus}`.trim());
+  };
+
+  pi.on("session_start", async (_event, ctx) => {
+    currentCtx = ctx;
+    updateStatus();
+  });
+
+  pi.on("session_shutdown", () => {
+    if (currentCtx) {
+      currentCtx.ui.setStatus("bus", undefined);
+    }
+  });
+
+  // --- Event Listeners ---
+
+  // Listen for discovered agents (from agents-discovery.ts)
+  pi.events.on("discovery:agents-loaded", (data) => {
+    const { paths } = data as { paths: string[] };
+    // Add unique paths
+    state.discoveredAgents = [...new Set([...state.discoveredAgents, ...paths])];
+    updateStatus();
+  });
+
+  // Listen for LSP status (from lsp extension)
+  pi.events.on("lsp:status", (data) => {
+    state.lspStatus = (data as { status: GlobalState["lspStatus"] }).status;
+    updateStatus();
+  });
+
+  // Listen for custom notifications
+  pi.events.on("my:notification", (data) => {
+    const { message, title } = data as { message: string; title?: string };
+    state.lastNotification = { title: title || "Info", message, timestamp: Date.now() };
+
+    // Trigger the actual notification system
+    pi.events.emit("ui:notify", { title, message });
+    updateStatus();
+  });
+
+  // --- Commands ---
+
+  pi.registerCommand("bus-status", {
+    description: "Show the current state of the event bus",
+    handler: async (_args, ctx) => {
+      const lines = [
+        "Event Bus State:",
+        `- Agents: ${state.discoveredAgents.join(", ") || "none"}`,
+        `- LSP: ${state.lspStatus}`,
+        `- Last Notify: ${state.lastNotification?.message || "none"}`,
+      ];
+      ctx.ui.notify(lines.join("\n"), "info");
+    },
+  });
 }
