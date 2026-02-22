@@ -1,22 +1,12 @@
-/**
- * Session Stats Extension
- *
- * Provides a `/stats` command that displays a detailed overview of the current
- * session: token usage, cost, turns, time spent, and files modified.
- *
- * Data is collected from two sources:
- *   1. Session branch entries (persistent — survives restart)
- *   2. Live event counters (turn_start, tool_result, etc.)
- *
- * The stats panel renders as a bordered TUI overlay, dismissed with Esc/Enter.
- */
-
 import type { ExtensionAPI, SessionEntry } from "@mariozechner/pi-coding-agent";
 import type { Component } from "@mariozechner/pi-tui";
 import { matchesKey } from "@mariozechner/pi-tui";
 import { ansiBold, ansiColor } from "../prelude/ui/ansi.js";
 import { borderLine, contentLine, emptyLine } from "../prelude/ui/box.js";
 import { centerAnsiText } from "../prelude/ui/layout.js";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { getHomeDir } from "../prelude/environment.js";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -29,24 +19,19 @@ interface UsageAccum {
 }
 
 interface SessionStats {
-  // Tokens
   usage: UsageAccum;
-
-  // Turns & messages
   turns: number;
   userMessages: number;
   assistantMessages: number;
   toolCalls: number;
-
-  // Files
   filesRead: Set<string>;
   filesWritten: Set<string>;
   filesEdited: Set<string>;
-
-  // Timing
   sessionStartTime: number;
   firstMessageTime: number | null;
   lastMessageTime: number | null;
+  isGlobal?: boolean;
+  sessionCount?: number;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -94,7 +79,6 @@ function formatCost(cost: number): string {
 
 /**
  * Walk the session branch and extract all stats from stored entries.
- * This is the source of truth — it works even after restart.
  */
 function collectStatsFromBranch(branch: SessionEntry[]): SessionStats {
   const stats = createStats();
@@ -127,7 +111,6 @@ function collectStatsFromBranch(branch: SessionEntry[]): SessionStats {
           stats.usage.cost += usage.cost?.total ?? 0;
         }
 
-        // Count tool calls in assistant content
         const content = msg.content;
         if (Array.isArray(content)) {
           for (const part of content) {
@@ -155,20 +138,66 @@ function collectStatsFromBranch(branch: SessionEntry[]): SessionStats {
     }
   }
 
-  // Turns ≈ user messages (each user message triggers a turn)
   stats.turns = stats.userMessages;
-
   return stats;
+}
+
+function collectGlobalStats(): SessionStats {
+  const globalStats = createStats();
+  globalStats.isGlobal = true;
+  globalStats.sessionCount = 0;
+
+  const homeDir = getHomeDir();
+  const sessionsDir = path.join(homeDir, ".pi", "agent", "sessions");
+
+  if (!fs.existsSync(sessionsDir)) return globalStats;
+
+  const projectDirs = fs.readdirSync(sessionsDir);
+  for (const projectDir of projectDirs) {
+    const projectPath = path.join(sessionsDir, projectDir);
+    if (!fs.statSync(projectPath).isDirectory()) continue;
+
+    const sessionFiles = fs.readdirSync(projectPath).filter(f => f.endsWith(".jsonl"));
+    for (const file of sessionFiles) {
+      globalStats.sessionCount!++;
+      const filePath = path.join(projectPath, file);
+      const content = fs.readFileSync(filePath, "utf8");
+      const lines = content.split("\n");
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const entry = JSON.parse(line);
+          if (entry.type === "message" && entry.message?.role === "assistant") {
+            const usage = entry.message.usage;
+            if (usage) {
+              globalStats.usage.input += usage.input ?? 0;
+              globalStats.usage.output += usage.output ?? 0;
+              globalStats.usage.cacheRead += usage.cacheRead ?? 0;
+              globalStats.usage.cacheWrite += usage.cacheWrite ?? 0;
+              globalStats.usage.cost += usage.cost?.total ?? 0;
+            }
+            globalStats.assistantMessages++;
+          } else if (entry.type === "message" && entry.message?.role === "user") {
+            globalStats.userMessages++;
+          }
+        } catch { /* skip invalid json */ }
+      }
+    }
+  }
+
+  globalStats.turns = globalStats.userMessages;
+  return globalStats;
 }
 
 // ── UI Component ───────────────────────────────────────────────────────────────
 
-const ACCENT = 36;   // cyan
-const LABEL = 37;    // white
-const VALUE = 97;    // bright white
-const HEADING = 33;  // yellow
-const SUCCESS = 32;  // green
-const MUTED = 37;    // white
+const ACCENT = 36;
+const LABEL = 37;
+const VALUE = 97;
+const HEADING = 33;
+const SUCCESS = 32;
+const MUTED = 37;
 
 const label = (s: string) => ansiColor(s, LABEL);
 const value = (s: string) => ansiBold(ansiColor(s, VALUE));
@@ -189,11 +218,7 @@ class StatsPanel implements Component {
   }
 
   handleInput(data: string): void {
-    if (
-      matchesKey(data, "escape") ||
-      matchesKey(data, "enter") ||
-      matchesKey(data, "q")
-    ) {
+    if (matchesKey(data, "escape") || matchesKey(data, "enter") || matchesKey(data, "q")) {
       this.onDone();
     }
   }
@@ -208,53 +233,38 @@ class StatsPanel implements Component {
     const border = (t: string) => accent(t);
     const boxLines: string[] = [];
 
-    // ── Header ───────────────────────────────────────────────────────────────
     boxLines.push(borderLine(boxWidth, "╭", "╮", border));
-    boxLines.push(contentLine(heading("  Session Statistics"), boxWidth, border, 0));
+    const titleText = s.isGlobal ? "  Global Usage Statistics" : "  Session Statistics";
+    boxLines.push(contentLine(heading(titleText), boxWidth, border, 0));
     boxLines.push(borderLine(boxWidth, "├", "┤", border));
 
-    // ── Timing ───────────────────────────────────────────────────────────────
     boxLines.push(emptyLine(boxWidth, border));
 
-    const elapsed = Date.now() - s.sessionStartTime;
-    const activeTime = (s.firstMessageTime && s.lastMessageTime)
-      ? s.lastMessageTime - s.firstMessageTime
-      : 0;
-
-    boxLines.push(contentLine(
-      `${label("Session duration")}  ${value(formatDuration(elapsed))}`,
-      boxWidth, border,
-    ));
-
-    if (activeTime > 0) {
+    if (s.isGlobal) {
       boxLines.push(contentLine(
-        `${label("Active span")}       ${value(formatDuration(activeTime))}`,
+        `${label("Total sessions")}    ${value(String(s.sessionCount))}`,
+        boxWidth, border,
+      ));
+    } else {
+      const elapsed = Date.now() - s.sessionStartTime;
+      boxLines.push(contentLine(
+        `${label("Session duration")}  ${value(formatDuration(elapsed))}`,
         boxWidth, border,
       ));
     }
 
-    // ── Conversation ─────────────────────────────────────────────────────────
     boxLines.push(borderLine(boxWidth, "├", "┤", border, "╌"));
     boxLines.push(emptyLine(boxWidth, border));
 
     boxLines.push(contentLine(
-      `${label("Turns")}             ${value(String(s.turns))}`,
-      boxWidth, border,
-    ));
-    boxLines.push(contentLine(
-      `${label("User messages")}     ${value(String(s.userMessages))}`,
+      `${label("Total turns")}       ${value(String(s.turns))}`,
       boxWidth, border,
     ));
     boxLines.push(contentLine(
       `${label("Assistant msgs")}    ${value(String(s.assistantMessages))}`,
       boxWidth, border,
     ));
-    boxLines.push(contentLine(
-      `${label("Tool calls")}        ${value(String(s.toolCalls))}`,
-      boxWidth, border,
-    ));
 
-    // ── Tokens ───────────────────────────────────────────────────────────────
     boxLines.push(borderLine(boxWidth, "├", "┤", border, "╌"));
     boxLines.push(emptyLine(boxWidth, border));
 
@@ -276,10 +286,6 @@ class StatsPanel implements Component {
         `${label("Cache read")}        ${value(formatTokens(u.cacheRead))}`,
         boxWidth, border,
       ));
-      boxLines.push(contentLine(
-        `${label("Cache write")}       ${value(formatTokens(u.cacheWrite))}`,
-        boxWidth, border,
-      ));
     }
 
     boxLines.push(contentLine(
@@ -294,50 +300,18 @@ class StatsPanel implements Component {
       ));
     }
 
-    // ── Files ────────────────────────────────────────────────────────────────
-    const allModified = new Set([...s.filesWritten, ...s.filesEdited]);
-    const readOnly = new Set([...s.filesRead].filter(f => !allModified.has(f)));
-
-    if (allModified.size > 0 || readOnly.size > 0) {
-      boxLines.push(borderLine(boxWidth, "├", "┤", border, "╌"));
-      boxLines.push(emptyLine(boxWidth, border));
-
-      boxLines.push(contentLine(
-        `${label("Files modified")}    ${value(String(allModified.size))}` +
-        `    ${label("Files read")}  ${value(String(readOnly.size))}`,
-        boxWidth, border,
-      ));
-
-      // List modified files (up to 12)
+    if (!s.isGlobal) {
+      const allModified = new Set([...s.filesWritten, ...s.filesEdited]);
       if (allModified.size > 0) {
+        boxLines.push(borderLine(boxWidth, "├", "┤", border, "╌"));
         boxLines.push(emptyLine(boxWidth, border));
-        const sorted = [...allModified].sort();
-        const shown = sorted.slice(0, 12);
-
-        for (const file of shown) {
-          const op = s.filesWritten.has(file) ? success("W") : accent("E");
-          // Shorten path for display
-          const maxPathLen = boxWidth - 12;
-          let displayPath = file;
-          if (displayPath.length > maxPathLen) {
-            displayPath = "…" + displayPath.slice(-(maxPathLen - 1));
-          }
-          boxLines.push(contentLine(
-            `  ${op} ${muted(displayPath)}`,
-            boxWidth, border,
-          ));
-        }
-
-        if (sorted.length > 12) {
-          boxLines.push(contentLine(
-            `  ${muted(`… and ${sorted.length - 12} more`)}`,
-            boxWidth, border,
-          ));
-        }
+        boxLines.push(contentLine(
+          `${label("Files modified")}    ${value(String(allModified.size))}`,
+          boxWidth, border,
+        ));
       }
     }
 
-    // ── Footer ───────────────────────────────────────────────────────────────
     boxLines.push(emptyLine(boxWidth, border));
     boxLines.push(contentLine(
       muted("Press Esc, Enter, or q to close"),
@@ -345,12 +319,11 @@ class StatsPanel implements Component {
     ));
     boxLines.push(borderLine(boxWidth, "╰", "╯", border));
 
-    // Center the entire box
-    const finalLines: string[] = ["", ""]; // Top padding
+    const finalLines: string[] = ["", ""];
     for (const line of boxLines) {
       finalLines.push(centerAnsiText(line, width));
     }
-    finalLines.push(""); // Bottom padding
+    finalLines.push("");
 
     this.cachedWidth = width;
     this.cachedLines = finalLines;
@@ -368,7 +341,6 @@ class StatsPanel implements Component {
 export default function (pi: ExtensionAPI) {
   let sessionStartTime = Date.now();
 
-  // Track session start time
   pi.on("session_start", async () => {
     sessionStartTime = Date.now();
   });
@@ -378,17 +350,21 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.registerCommand("stats", {
-    description: "Show session statistics (tokens, turns, cost, files)",
-    handler: async (_args, ctx) => {
+    description: "Show session statistics (tokens, turns, cost, files). Use --global for all-time stats.",
+    handler: async (args, ctx) => {
       if (!ctx.hasUI) {
         ctx.ui.notify("/stats requires interactive mode", "error");
         return;
       }
 
-      // Collect stats from session history
-      const branch = ctx.sessionManager.getBranch();
-      const stats = collectStatsFromBranch(branch);
-      stats.sessionStartTime = sessionStartTime;
+      let stats: SessionStats;
+      if (args.includes("--global")) {
+        stats = collectGlobalStats();
+      } else {
+        const branch = ctx.sessionManager.getBranch();
+        stats = collectStatsFromBranch(branch);
+        stats.sessionStartTime = sessionStartTime;
+      }
 
       await ctx.ui.custom<void>(
         (_tui, _theme, _kb, done) => {

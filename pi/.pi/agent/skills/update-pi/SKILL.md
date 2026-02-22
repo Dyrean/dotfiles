@@ -47,7 +47,9 @@ else
 fi
 
 # 3) Sync dotfiles Pi package versions only when drift exists
-cd ~/.dotfiles/home/.pi/agent
+# Dynamically locate the package.json within the dotfiles/pi structure
+PI_AGENT_DIR=$(find ~/ -maxdepth 4 -type d -path "*/dotfiles/pi/.pi/agent" -print -quit 2>/dev/null || echo "~/.pi/agent")
+cd "${PI_AGENT_DIR}"
 
 PKG_JSON_UPDATED="$(LATEST="${LATEST}" TARGET_RANGE="${TARGET_RANGE}" node -e '
 const fs = require("fs");

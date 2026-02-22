@@ -520,4 +520,21 @@ export default function (pi: ExtensionAPI) {
       ctx.ui.notify("Cleared pasted images", "info");
     },
   });
+
+  pi.registerCommand("gallery", {
+    description: "View currently attached image tokens and paths",
+    handler: async (_args, ctx) => {
+      if (pendingImages.length === 0) {
+        ctx.ui.notify("No images currently attached", "info");
+        return;
+      }
+
+      const lines = ["Attached Images:", ""];
+      for (const img of pendingImages) {
+        lines.push(`${img.token}  ${img.path}`);
+      }
+
+      ctx.ui.notify(lines.join("\n"), "info");
+    },
+  });
 }

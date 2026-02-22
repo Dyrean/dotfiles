@@ -421,6 +421,14 @@ const extensionStatusesSegment: StatusLineSegment = {
   },
 };
 
+const lspBreadcrumbsSegment: StatusLineSegment = {
+  id: "lsp_breadcrumbs",
+  render(ctx) {
+    if (!ctx.breadcrumbs) return { content: "", visible: false };
+    return { content: ctx.theme.fg("dim", ctx.breadcrumbs), visible: true };
+  },
+};
+
 export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
   pi: piSegment,
   model: modelSegment,
@@ -441,6 +449,7 @@ export const SEGMENTS: Record<StatusLineSegmentId, StatusLineSegment> = {
   cache_read: cacheReadSegment,
   cache_write: cacheWriteSegment,
   extension_statuses: extensionStatusesSegment,
+  lsp_breadcrumbs: lspBreadcrumbsSegment,
 };
 
 export function renderSegment(id: StatusLineSegmentId, ctx: SegmentContext): RenderedSegment {

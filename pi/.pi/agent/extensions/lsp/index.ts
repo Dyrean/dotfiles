@@ -55,6 +55,36 @@ export default function lspExtension(pi: ExtensionAPI) {
   registerLspTool(pi, runtime);
   registerLspHooks(pi, runtime);
 
+  // Expose breadcrumbs helper via events
+  pi.events.on("lsp:get-breadcrumbs", async (data: { filePath: string; line: number; character: number }, callback: (breadcrumbs: string) => void) => {
+    try {
+      const summary = await runtime.run(data.filePath, async (client) => {
+        return await client.request("textDocument/documentSymbol", {
+          textDocument: { uri: `file://${data.filePath}` },
+        });
+      });
+
+      const symbols = (summary.outcomes.find(o => o.ok)?.value as any[]) || [];
+      const line = data.line - 1; // Convert to 0-based for LSP
+
+      function findPath(nodes: any[], targetLine: number): string[] {
+        for (const node of nodes) {
+          const range = node.range || node.location?.range;
+          if (range && targetLine >= range.start.line && targetLine <= range.end.line) {
+            const childPath = findPath(node.children || [], targetLine);
+            return [node.name, ...childPath];
+          }
+        }
+        return [];
+      }
+
+      const path = findPath(symbols, line);
+      callback(path.join(" > "));
+    } catch {
+      callback("");
+    }
+  });
+
   pi.on("session_start", async (_event, ctx) => {
     runtime.setCwd(ctx.cwd);
     console.log("[lsp-extension] startup");

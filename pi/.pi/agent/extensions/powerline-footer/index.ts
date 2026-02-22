@@ -14,6 +14,7 @@ const STATIC_SEGMENTS: StatusLineSegmentId[] = [
   "vcs",
   "model",
   "context_pct",
+  "lsp_breadcrumbs",
 ];
 
 const STATIC_SEGMENT_OPTIONS: StatusLineSegmentOptions = {
@@ -26,6 +27,9 @@ const STATIC_SEPARATOR = getSeparator("powerline-thin");
 const STATIC_COLORS: ColorScheme = getDefaultColors();
 const EMPTY_STATUSES = new Map<string, string>();
 const VCS_REFRESH_DELAYS = [0, 120, 320, 700, 1400] as const;
+
+let currentBreadcrumbs = "";
+let lastLspFocus: { filePath: string; line: number; character: number } | null = null;
 
 type ThinkingBorderColor =
   | "thinkingOff"
@@ -274,6 +278,36 @@ export default function powerlineFooter(pi: ExtensionAPI) {
   pi.on("tool_result", async (event) => {
     let shouldRefresh = false;
 
+    if (event.toolName === "read") {
+      const input = event.input as { path?: string; line?: number; offset?: number };
+      if (input.path) {
+        lastLspFocus = {
+          filePath: input.path,
+          line: input.line ?? (input.offset ? 1 : 1), // Default to 1 if not specified
+          character: 1,
+        };
+        pi.events.emit("lsp:get-breadcrumbs", lastLspFocus, (b: string) => {
+          currentBreadcrumbs = b;
+          tuiRef?.requestRender();
+        });
+      }
+    }
+
+    if (event.toolName === "lsp") {
+      const input = event.input as { filePath?: string; line?: number; character?: number };
+      if (input.filePath && input.line) {
+        lastLspFocus = {
+          filePath: input.filePath,
+          line: input.line,
+          character: input.character ?? 1,
+        };
+        pi.events.emit("lsp:get-breadcrumbs", lastLspFocus, (b: string) => {
+          currentBreadcrumbs = b;
+          tuiRef?.requestRender();
+        });
+      }
+    }
+
     if (event.toolName === "write" || event.toolName === "edit") {
       invalidateVcsStatus();
       shouldRefresh = true;
@@ -339,6 +373,7 @@ export default function powerlineFooter(pi: ExtensionAPI) {
       usingSubscription,
       sessionStartTime,
       vcs: vcsStatus,
+      breadcrumbs: currentBreadcrumbs,
       extensionStatuses: footerDataRef?.getExtensionStatuses() ?? EMPTY_STATUSES,
       options: STATIC_SEGMENT_OPTIONS,
       theme,

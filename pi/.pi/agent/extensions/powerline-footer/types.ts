@@ -44,7 +44,8 @@ export type StatusLineSegmentId =
   | "cache_read"
   | "cache_write"
   | "thinking"
-  | "extension_statuses";
+  | "extension_statuses"
+  | "lsp_breadcrumbs";
 
 // Separator styles
 export type StatusLineSeparatorStyle =
@@ -122,6 +123,9 @@ export interface SegmentContext {
 
   // VCS
   vcs: VcsStatus;
+
+  // Breadcrumbs
+  breadcrumbs: string;
 
   // Extension statuses
   extensionStatuses: ReadonlyMap<string, string>;
