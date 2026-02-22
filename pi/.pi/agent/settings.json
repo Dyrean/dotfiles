@@ -3,7 +3,7 @@
   "defaultProvider": "google-gemini-cli",
   "defaultModel": "gemini-3-flash-preview",
   "defaultThinkingLevel": "off",
-  "theme": "catppuccin-macchiato",
+  "theme": "tokyo-night",
   "packages": [
     "npm:pi-mcp-adapter",
     "npm:pi-subagents",
