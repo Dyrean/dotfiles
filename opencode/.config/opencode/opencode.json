@@ -101,9 +101,9 @@
     },
     "pencil": {
       "command": [
-        "/tmp/.mount_PencilOLIIXn/resources/app.asar.unpacked/out/mcp-server-linux-x64",
+        "/home/dyrean/.antigravity/extensions/highagency.pencildev-0.6.28-universal/out/mcp-server-linux-x64",
         "--app",
-        "desktop"
+        "antigravity"
       ],
       "enabled": true,
       "type": "local"

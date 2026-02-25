@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "packages": {
+    "pi-subagents": {
+      "name": "pi-subagents",
+      "timestamp": 1772031709779,
+      "size": 485168
+    },
+    "pi-agentic-compaction": {
+      "name": "pi-agentic-compaction",
+      "timestamp": 1772031709844,
+      "size": 24043
+    },
+    "pi-mermaid": {
+      "name": "pi-mermaid",
+      "timestamp": 1772031709913,
+      "size": 31753
+    },
+    "pi-mcp-adapter": {
+      "name": "pi-mcp-adapter",
+      "timestamp": 1772031710226,
+      "size": 204504
+    },
+    "@aliou/pi-guardrails": {
+      "name": "@aliou/pi-guardrails",
+      "timestamp": 1772031711302,
+      "description": "Security hooks to prevent potentially dangerous operations.",
+      "size": 68656
+    },
+    "pi-extmgr": {
+      "name": "pi-extmgr",
+      "timestamp": 1772031711571,
+      "size": 216300
+    },
+    "@tmustier/pi-usage-extension": {
+      "name": "@tmustier/pi-usage-extension",
+      "size": 220104,
+      "timestamp": 1772031838891
+    }
+  }
+}
