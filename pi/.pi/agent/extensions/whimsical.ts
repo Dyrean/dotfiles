@@ -459,7 +459,7 @@ const messages = [
 ];
 
 function pickRandom(): string {
-  return messages[Math.floor(Math.random() * messages.length)];
+  return messages[Math.floor(Math.random() * messages.length)] ?? messages[0] ?? "Working...";
 }
 
 export default function (pi: ExtensionAPI) {

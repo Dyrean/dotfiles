@@ -128,10 +128,12 @@ function writePromptToTempFile(name: string, prompt: string): { dir: string; fil
 export function extractFinalText(messages: Message[]): string {
 	for (let i = messages.length - 1; i >= 0; i--) {
 		const msg = messages[i];
-		if (msg.role !== "assistant") continue;
+		if (!msg || msg.role !== "assistant") continue;
 		const parts: string[] = [];
 		for (const part of msg.content) {
-			if (part.type === "text" && part.text.trim().length > 0) parts.push(part.text);
+			if (typeof part === "object" && part && part.type === "text" && part.text.trim().length > 0) {
+				parts.push(part.text);
+			}
 		}
 		if (parts.length > 0) return parts.join("\n").trim();
 	}
@@ -153,7 +155,7 @@ async function runSubagentProcess(input: SpawnInput): Promise<ExecutionResult> {
 	let sessionPath: string | undefined;
 	// pi CLI requires --provider and --model as separate flags; "provider/model" as one --model value silently falls back to default
 	const modelArgs: string[] = input.modelId.includes("/")
-		? ["--provider", input.modelId.split("/")[0], "--model", input.modelId.split("/").slice(1).join("/")]
+		? ["--provider", input.modelId.split("/")[0] ?? "", "--model", input.modelId.split("/").slice(1).join("/")]
 		: ["--model", input.modelId];
 	const args: string[] = ["--mode", "json", "-p", ...modelArgs];
 	if (input.sessionDir) {
@@ -495,25 +497,25 @@ export async function preflightTypecheck(code: string): Promise<string | null> {
 			include: ["program.ts", "env.d.ts"],
 		}));
 
-		const result = await new Promise<{ code: number; stderr: string }>((resolve) => {
-			let stderr = "";
+		const result = await new Promise<{ code: number; output: string }>((resolve) => {
+			let output = "";
 			const proc = spawn("tsgo", ["--noEmit", "-p", path.join(tmpDir, "tsconfig.json")], { stdio: ["ignore", "pipe", "pipe"] });
-			proc.stdout.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
-			proc.stderr.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
-			proc.on("close", (exitCode) => resolve({ code: exitCode ?? 1, stderr }));
-			proc.on("error", () => resolve({ code: -1, stderr: "" })); // tsgo not found — skip
+			proc.stdout.on("data", (chunk: Buffer) => { output += chunk.toString(); });
+			proc.stderr.on("data", (chunk: Buffer) => { output += chunk.toString(); });
+			proc.on("close", (exitCode) => resolve({ code: exitCode ?? 1, output }));
+			proc.on("error", () => resolve({ code: -1, output: "" })); // tsgo not found — skip
 		});
 
 		if (result.code === -1) return null; // tsgo not available, skip
 		if (result.code === 0) return null; // clean
 
-		const errors = result.stderr
+		const errors = result.output
 			.split("\n")
 			.filter((l) => l.includes("error TS"))
 			.join("\n")
 			.trim();
 
-		const details = errors || result.stderr.trim();
+		const details = errors || result.output.trim();
 		if (!details) return null;
 		return `Program source preserved at: ${programPath}\n${details}`;
 	} catch {

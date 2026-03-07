@@ -17,15 +17,16 @@
  */
 
 import {
-    CustomEditor,
     type ExtensionAPI,
     type ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
-import { matchesKey, visibleWidth, type EditorTheme, type TUI } from "@mariozechner/pi-tui";
+import { matchesKey, visibleWidth } from "@mariozechner/pi-tui";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 import { execSync } from "node:child_process";
+import { bindEditorPluginStack, registerEditorPlugin } from "../prelude/ui/editor-plugin-stack.js";
+import { openManagedOverlay } from "../prelude/ui/overlay-manager.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -385,7 +386,7 @@ function globToRegex(pattern: string): RegExp {
     let i = 0;
 
     while (i < pattern.length) {
-        const char = pattern[i];
+        const char = pattern[i] ?? "";
 
         if (char === "*") {
             if (pattern[i + 1] === "*") {
@@ -490,9 +491,9 @@ class FileBrowserComponent {
     private readonly maxVisible = 10;
     private cwdRoot: string;
     private currentDir: string;
-    private allEntries: FileEntry[];
-    private allFilesRecursive: FileEntry[];
-    private filtered: FileEntry[];
+    private allEntries: FileEntry[] = [];
+    private allFilesRecursive: FileEntry[] = [];
+    private filtered: FileEntry[] = [];
     private selected = 0;
     private query = "";
     private isSearchMode = false;
@@ -836,6 +837,7 @@ class FileBrowserComponent {
             const optParts: string[] = [];
             for (let i = 0; i < visibleOptions.length; i++) {
                 const opt = visibleOptions[i];
+                if (!opt) continue;
                 const isSelectedOpt = this.focusOnOptions && i === this.selectedOption;
                 const checkbox = opt.enabled ? checked("☑") : hint("☐");
                 const label = isSelectedOpt
@@ -866,6 +868,7 @@ class FileBrowserComponent {
             const actualIndex = startIndex + i;
             if (actualIndex < this.filtered.length) {
                 const entry = this.filtered[actualIndex];
+                if (!entry) continue;
                 const isSelectedEntry = actualIndex === this.selected;
                 const isUpDir = this.isUpEntry(entry);
                 const isChecked = !isUpDir && this.selectedPaths.has(entry.relativePath);
@@ -945,9 +948,11 @@ class FileBrowserComponent {
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function openFilePicker(ui: ExtensionContext["ui"]): Promise<void> {
-    const result = await ui.custom<FileBrowserAction>(
+    const result = await openManagedOverlay<FileBrowserAction>(
+        ui,
+        { id: "file-picker" },
         (_tui, _theme, _kb, done) => new FileBrowserComponent(done),
-        { overlay: true }
+        { width: "92%", maxHeight: "90%" }
     );
 
     const paths = result.action === "cancel" ? [] : result.paths;
@@ -964,66 +969,70 @@ async function openFilePicker(ui: ExtensionContext["ui"]): Promise<void> {
 // Custom Editor (intercepts @)
 // ═══════════════════════════════════════════════════════════════════════════
 
-class FilePickerEditor extends CustomEditor {
-    private opening = false;
-    private originalProvider: any = null;
+type FilePickerAwareEditor = {
+    getCursor: () => { line: number; col: number };
+    getLines: () => string[];
+    handleInput: (data: string) => void;
+    isShowingAutocomplete: () => boolean;
+    setAutocompleteProvider: (provider: any) => void;
+};
 
-    constructor(
-        private tui: TUI,
-        theme: EditorTheme,
-        keybindings: any,
-        private ui: ExtensionContext["ui"]
-    ) {
-        super(tui, theme, keybindings);
-    }
+type FilePickerEditorContext = {
+    ui: ExtensionContext["ui"];
+};
 
-    // Wrap the autocomplete provider to filter out @ completions
-    setAutocompleteProvider(provider: any): void {
-        this.originalProvider = provider;
+function shouldTriggerFilePicker(editor: FilePickerAwareEditor): boolean {
+    const cursor = editor.getCursor();
+    const line = editor.getLines()[cursor.line] ?? "";
 
-        const wrappedProvider = {
-            getSuggestions: (lines: string[], cursorLine: number, cursorCol: number) => {
-                const line = lines[cursorLine] ?? "";
-                const beforeCursor = line.slice(0, cursorCol);
+    if (cursor.col === 0) return true;
 
-                // If in @ context, return null (no suggestions) - we handle @ ourselves
-                if (beforeCursor.match(/(?:^|[\s])@[^\s]*$/)) {
-                    return null;
-                }
+    const before = line[cursor.col - 1];
+    return before === " " || before === "\t" || before === undefined;
+}
 
-                return provider.getSuggestions(lines, cursorLine, cursorCol);
-            },
-            applyCompletion: (...args: any[]) => provider.applyCompletion(...args),
+function decorateFilePickerEditor(editor: unknown, ui: ExtensionContext["ui"]): unknown {
+    const filePickerEditor = editor as FilePickerAwareEditor;
+    let opening = false;
+
+    const originalSetAutocompleteProvider = filePickerEditor.setAutocompleteProvider?.bind(filePickerEditor);
+    if (originalSetAutocompleteProvider) {
+        filePickerEditor.setAutocompleteProvider = (provider: any) => {
+            const wrappedProvider = {
+                getSuggestions: (lines: string[], cursorLine: number, cursorCol: number) => {
+                    const line = lines[cursorLine] ?? "";
+                    const beforeCursor = line.slice(0, cursorCol);
+
+                    if (beforeCursor.match(/(?:^|[\s])@[^\s]*$/)) {
+                        return null;
+                    }
+
+                    return provider.getSuggestions(lines, cursorLine, cursorCol);
+                },
+                applyCompletion: (...args: any[]) => provider.applyCompletion(...args),
+            };
+
+            originalSetAutocompleteProvider(wrappedProvider);
         };
-
-        super.setAutocompleteProvider(wrappedProvider);
     }
 
-    handleInput(data: string): void {
-        if (this.opening) return;
+    const originalHandleInput = filePickerEditor.handleInput.bind(filePickerEditor);
+    filePickerEditor.handleInput = (data: string) => {
+        if (opening) return;
 
-        // Intercept @ to open our file picker instead of native
-        if (data === "@" && this.shouldTriggerFilePicker()) {
-            this.opening = true;
-            if (this.isShowingAutocomplete()) {
-                super.handleInput("\x1b");
+        if (data === "@" && shouldTriggerFilePicker(filePickerEditor)) {
+            opening = true;
+            if (filePickerEditor.isShowingAutocomplete()) {
+                originalHandleInput("\x1b");
             }
-            openFilePicker(this.ui).finally(() => { this.opening = false; });
+            openFilePicker(ui).finally(() => { opening = false; });
             return;
         }
 
-        super.handleInput(data);
-    }
+        originalHandleInput(data);
+    };
 
-    private shouldTriggerFilePicker(): boolean {
-        const cursor = this.getCursor();
-        const line = this.getLines()[cursor.line] ?? "";
-
-        if (cursor.col === 0) return true;
-
-        const before = line[cursor.col - 1];
-        return before === " " || before === "\t" || before === undefined;
-    }
+    return filePickerEditor;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1031,20 +1040,25 @@ class FilePickerEditor extends CustomEditor {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export default function (pi: ExtensionAPI) {
-    const attachEditor = (ctx: ExtensionContext) => {
-        if (!ctx.hasUI) return;
-        ctx.ui.setEditorComponent(
-            (tui, theme, keybindings) => new FilePickerEditor(tui, theme, keybindings, ctx.ui)
-        );
-    };
+    registerEditorPlugin(
+        "file-picker",
+        (factory, ctx) => (tui, theme, keybindings) => decorateFilePickerEditor(factory(tui, theme, keybindings), (ctx as unknown as FilePickerEditorContext).ui),
+        10,
+    );
 
     pi.on("session_start", (_event, ctx) => {
         state.respectGitignore = config.respectGitignore ?? true;
         state.skipHidden = config.skipHidden ?? true;
-        attachEditor(ctx);
+        if (ctx.hasUI) {
+            bindEditorPluginStack(ctx);
+        }
     });
 
-    pi.on("session_switch", (_event, ctx) => attachEditor(ctx));
+    pi.on("session_switch", (_event, ctx) => {
+        if (ctx.hasUI) {
+            bindEditorPluginStack(ctx);
+        }
+    });
 
     pi.registerCommand("files", {
         description: "Browse and select files to reference",

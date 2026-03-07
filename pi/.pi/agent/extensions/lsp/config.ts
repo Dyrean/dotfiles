@@ -263,7 +263,7 @@ function sanitizeProjectOverrides(args: {
   const { projectConfig, policy, trustedProject } = args;
   const warnings: LspLoadWarning[] = [];
 
-  if (!projectConfig.lsp || projectConfig.lsp === false) {
+  if (projectConfig.lsp === false || !projectConfig.lsp) {
     return { config: clone(projectConfig), warnings };
   }
 
@@ -394,7 +394,7 @@ function normalizeConfig(config: LspConfigFile): LspNormalizedConfig {
 }
 
 function getServerKeys(config: LspConfigFile): string[] {
-  if (!config.lsp || config.lsp === false) {
+  if (config.lsp === false || !config.lsp) {
     return [];
   }
   return Object.keys(config.lsp);

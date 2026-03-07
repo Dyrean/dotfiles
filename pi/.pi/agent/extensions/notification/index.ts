@@ -211,12 +211,15 @@ export default function (pi: ExtensionAPI) {
 	// Settings are loaded once at startup.
 	// Changes to settings.json require /reload or a restart.
 	const settings = loadSettings();
+	let unsubscribeTerminalInput: (() => void) | undefined;
 
 	// Enable focus reporting (OSC 1004)
 	process.stdout.write("\x1b[?1004h");
 
 	pi.on("session_shutdown", () => {
 		// Disable focus reporting on exit
+		unsubscribeTerminalInput?.();
+		unsubscribeTerminalInput = undefined;
 		process.stdout.write("\x1b[?1004l");
 	});
 
@@ -227,7 +230,8 @@ export default function (pi: ExtensionAPI) {
 
 		// Track focus and activity
 		if (ctx.hasUI) {
-			ctx.ui.onTerminalInput((data) => {
+			unsubscribeTerminalInput?.();
+			unsubscribeTerminalInput = ctx.ui.onTerminalInput((data) => {
 				lastActivityTime = Date.now();
 
 				if (data === "\x1b[I") {

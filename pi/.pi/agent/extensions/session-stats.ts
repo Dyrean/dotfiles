@@ -7,6 +7,7 @@ import { centerAnsiText } from "../prelude/ui/layout.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { getHomeDir } from "../prelude/environment.js";
+import { openManagedOverlay } from "../prelude/ui/overlay-manager.js";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -366,12 +367,9 @@ export default function (pi: ExtensionAPI) {
         stats.sessionStartTime = sessionStartTime;
       }
 
-      await ctx.ui.custom<void>(
-        (_tui, _theme, _kb, done) => {
-          return new StatsPanel(stats, () => done());
-        },
-        { overlay: true },
-      );
+			await openManagedOverlay<void>(ctx.ui, { id: "session-stats" }, (_tui, _theme, _kb, done) => {
+				return new StatsPanel(stats, () => done());
+			});
     },
   });
 }

@@ -11,6 +11,7 @@ import {
 import { ansiBold, ansiColor, ansiDim } from "../prelude/ui/ansi.js";
 import { borderLine, contentLine, emptyLine } from "../prelude/ui/box.js";
 import { padRightVisible } from "../prelude/ui/layout.js";
+import { openManagedOverlay } from "../prelude/ui/overlay-manager.js";
 
 class Questionnaire implements Component {
     private questions: string[];
@@ -206,9 +207,9 @@ export default function (pi: ExtensionAPI) {
             
             const questions = ["What is your name?", "What is your quest?", "What is your favorite color?"];
 
-            const answersResult = await ctx.ui.custom<string | null>((tui, _theme, _kb, done) => {
-                return new Questionnaire(questions, tui, done);
-            });
+			const answersResult = await openManagedOverlay<string | null>(ctx.ui, { id: "questionnaire" }, (tui, _theme, _kb, done) => {
+				return new Questionnaire(questions, tui, done);
+			});
 
             if (answersResult === null) {
                 ctx.ui.notify("Questionnaire cancelled", "info");

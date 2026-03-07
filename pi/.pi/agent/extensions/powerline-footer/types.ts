@@ -1,4 +1,5 @@
 import type { Theme, ThemeColor } from "@mariozechner/pi-coding-agent";
+import type { StatusSnapshotEntry } from "../../prelude/ui/status-registry.js";
 
 // Theme color - either a pi theme color name or a custom hex color
 export type ColorValue = ThemeColor | `#${string}`;
@@ -128,7 +129,7 @@ export interface SegmentContext {
   breadcrumbs: string;
 
   // Extension statuses
-  extensionStatuses: ReadonlyMap<string, string>;
+  extensionStatuses: readonly StatusSnapshotEntry[];
 
   // Options
   options: StatusLineSegmentOptions;

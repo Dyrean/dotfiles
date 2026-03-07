@@ -1,9 +1,11 @@
-import { CustomEditor, type ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import type { ImageContent } from "@mariozechner/pi-ai";
 import { getEditorKeybindings, matchesKey } from "@mariozechner/pi-tui";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, extname, join } from "node:path";
+import { bindEditorPluginStack, registerEditorPlugin } from "../prelude/ui/editor-plugin-stack.js";
+import { bindStatusRegistry, clearStatusEntry, setStatusEntry } from "../prelude/ui/status-registry.js";
 
 const IMAGE_FILE_RE = /\.(png|jpe?g|gif|webp)$/i;
 const QUOTED_IMAGE_PATH_RE = /(["'])(~?\/(?:\\.|[^"'\\])+?\.(?:png|jpe?g|gif|webp))\1/gi;
@@ -52,79 +54,92 @@ function findTokenRangeAtIndex(text: string, index: number): { start: number; en
   return undefined;
 }
 
-class ImageTokenEditor extends CustomEditor {
-  private getCursorOffset(): number {
-    const cursor = this.getCursor();
-    const lines = this.getLines();
-    let offset = 0;
-    for (let i = 0; i < cursor.line; i++) {
-      offset += (lines[i]?.length ?? 0) + 1;
-    }
-    return offset + cursor.col;
+type ImageAwareEditor = {
+  getCursor: () => { line: number; col: number };
+  getLines: () => string[];
+  getText: () => string;
+  setText: (text: string) => void;
+  handleInput: (data: string) => void;
+  render: (width: number) => string[];
+  state: { cursorLine: number; cursorCol: number };
+  preferredVisualCol: number | null;
+};
+
+function getCursorOffset(editor: ImageAwareEditor): number {
+  const cursor = editor.getCursor();
+  const lines = editor.getLines();
+  let offset = 0;
+  for (let i = 0; i < cursor.line; i++) {
+    offset += (lines[i]?.length ?? 0) + 1;
+  }
+  return offset + cursor.col;
+}
+
+function setCursorOffset(editor: ImageAwareEditor, offset: number): void {
+  const lines = editor.getLines();
+
+  let remaining = Math.max(0, offset);
+  let lineIndex = 0;
+  for (; lineIndex < lines.length; lineIndex++) {
+    const len = lines[lineIndex]?.length ?? 0;
+    if (remaining <= len) break;
+    remaining -= len + 1;
   }
 
-  private setCursorOffset(offset: number): void {
-    const lines = this.getLines();
-    const state = this as unknown as {
-      state: { cursorLine: number; cursorCol: number; };
-      preferredVisualCol: number | null;
-    };
-
-    let remaining = Math.max(0, offset);
-    let lineIndex = 0;
-    for (; lineIndex < lines.length; lineIndex++) {
-      const len = lines[lineIndex]?.length ?? 0;
-      if (remaining <= len) break;
-      remaining -= len + 1;
-    }
-
-    if (lineIndex >= lines.length) {
-      lineIndex = Math.max(0, lines.length - 1);
-      remaining = lines[lineIndex]?.length ?? 0;
-    }
-
-    state.state.cursorLine = lineIndex;
-    state.state.cursorCol = remaining;
-    state.preferredVisualCol = null;
+  if (lineIndex >= lines.length) {
+    lineIndex = Math.max(0, lines.length - 1);
+    remaining = lines[lineIndex]?.length ?? 0;
   }
 
-  private deleteWholeTokenIfEditingOne(direction: "backward" | "forward"): boolean {
-    const text = this.getText();
-    const cursorOffset = this.getCursorOffset();
-    const targetIndex = direction === "backward" ? cursorOffset - 1 : cursorOffset;
-    if (targetIndex < 0 || targetIndex >= text.length) return false;
+  editor.state.cursorLine = lineIndex;
+  editor.state.cursorCol = remaining;
+  editor.preferredVisualCol = null;
+}
 
-    const tokenRange = findTokenRangeAtIndex(text, targetIndex);
-    if (!tokenRange) return false;
+function deleteWholeTokenIfEditingOne(editor: ImageAwareEditor, direction: "backward" | "forward"): boolean {
+  const text = editor.getText();
+  const cursorOffset = getCursorOffset(editor);
+  const targetIndex = direction === "backward" ? cursorOffset - 1 : cursorOffset;
+  if (targetIndex < 0 || targetIndex >= text.length) return false;
 
-    let removeStart = tokenRange.start;
-    let removeEnd = tokenRange.end;
-    if (text[removeEnd] === " ") {
-      removeEnd += 1;
-    } else if (removeStart > 0 && text[removeStart - 1] === " ") {
-      removeStart -= 1;
-    }
+  const tokenRange = findTokenRangeAtIndex(text, targetIndex);
+  if (!tokenRange) return false;
 
-    const nextText = text.slice(0, removeStart) + text.slice(removeEnd);
-    this.setText(nextText);
-    this.setCursorOffset(removeStart);
-    return true;
+  let removeStart = tokenRange.start;
+  let removeEnd = tokenRange.end;
+  if (text[removeEnd] === " ") {
+    removeEnd += 1;
+  } else if (removeStart > 0 && text[removeStart - 1] === " ") {
+    removeStart -= 1;
   }
 
-  override handleInput(data: string): void {
+  const nextText = text.slice(0, removeStart) + text.slice(removeEnd);
+  editor.setText(nextText);
+  setCursorOffset(editor, removeStart);
+  return true;
+}
+
+function decorateImageTokenEditor(editor: unknown): unknown {
+  const imageEditor = editor as ImageAwareEditor;
+  const originalHandleInput = imageEditor.handleInput.bind(imageEditor);
+  const originalRender = imageEditor.render.bind(imageEditor);
+
+  imageEditor.handleInput = (data: string) => {
     const kb = getEditorKeybindings();
     if (kb.matches(data, "deleteCharBackward") || matchesKey(data, "shift+backspace")) {
-      if (this.deleteWholeTokenIfEditingOne("backward")) return;
+      if (deleteWholeTokenIfEditingOne(imageEditor, "backward")) return;
     }
     if (kb.matches(data, "deleteCharForward") || matchesKey(data, "shift+delete")) {
-      if (this.deleteWholeTokenIfEditingOne("forward")) return;
+      if (deleteWholeTokenIfEditingOne(imageEditor, "forward")) return;
     }
-    super.handleInput(data);
-  }
+    originalHandleInput(data);
+  };
 
-  override render(width: number): string[] {
-    return super.render(width).map((line) => highlightImageTokenChips(line));
-  }
+  imageEditor.render = (width: number) => {
+    return originalRender(width).map((line) => highlightImageTokenChips(line));
+  };
+
+  return imageEditor;
 }
 
 function mediaTypeFromPath(filePath: string): PendingImage["mediaType"] | undefined {
@@ -242,6 +257,11 @@ export default function (pi: ExtensionAPI) {
   let scanTimer: ReturnType<typeof setTimeout> | undefined;
   let delayedScanTimer: ReturnType<typeof setTimeout> | undefined;
   let unsubscribeTerminalInput: (() => void) | undefined;
+  registerEditorPlugin(
+    "image-paste-ui",
+    (factory) => (tui, theme, keybindings) => decorateImageTokenEditor(factory(tui, theme, keybindings)),
+    20,
+  );
 
   const reindexPending = () => {
     pendingByPath = new Map<string, PendingImage>();
@@ -262,12 +282,22 @@ export default function (pi: ExtensionAPI) {
   const clearPending = (ctx?: StatusCtx) => {
     resetPendingState();
     lastScannedText = undefined;
-    ctx?.ui.setStatus(STATUS_KEY, undefined);
+    if (ctx?.hasUI) {
+      bindStatusRegistry(ctx);
+    }
+    clearStatusEntry(STATUS_KEY);
   };
 
   const updateStatus = (ctx: StatusCtx) => {
     if (!ctx.hasUI) return;
-    ctx.ui.setStatus(STATUS_KEY, undefined);
+    bindStatusRegistry(ctx);
+    if (pendingImages.length === 0) {
+      clearStatusEntry(STATUS_KEY);
+      return;
+    }
+
+    const label = pendingImages.length === 1 ? "1 image" : `${pendingImages.length} images`;
+    setStatusEntry(STATUS_KEY, { text: `🖼 ${label}`, priority: 20 });
   };
 
   const syncPendingImagesFromText = (text: string) => {
@@ -372,8 +402,9 @@ export default function (pi: ExtensionAPI) {
   pi.on("session_start", async (_event, ctx) => {
     if (!ctx.hasUI) return;
 
+    bindEditorPluginStack(ctx);
+    bindStatusRegistry(ctx);
     lastScannedText = undefined;
-    ctx.ui.setEditorComponent((tui, theme, kb) => new ImageTokenEditor(tui, theme, kb));
 
     unsubscribeTerminalInput?.();
     unsubscribeTerminalInput = ctx.ui.onTerminalInput(() => {
@@ -386,7 +417,9 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("session_shutdown", async (_event, ctx) => {
     if (ctx.hasUI) {
-      ctx.ui.setEditorComponent(undefined);
+      bindEditorPluginStack(ctx);
+      bindStatusRegistry(ctx);
+      clearStatusEntry(STATUS_KEY);
     }
     unsubscribeTerminalInput?.();
     unsubscribeTerminalInput = undefined;
@@ -400,6 +433,11 @@ export default function (pi: ExtensionAPI) {
     }
     resetPendingState();
     lastScannedText = undefined;
+  });
+
+  pi.on("session_switch", async (_event, ctx) => {
+    if (!ctx.hasUI) return;
+    bindEditorPluginStack(ctx);
   });
 
   pi.on("context", async (event) => {

@@ -4,6 +4,7 @@ import { LspRuntime } from "./runtime.js";
 import { registerLspTool } from "./tool.js";
 import { registerLspHooks } from "./hooks.js";
 import type { LspPanelSnapshot } from "./types.js";
+import { openManagedOverlay } from "../../prelude/ui/overlay-manager.js";
 
 export function summarizeSnapshot(snapshot: LspPanelSnapshot): string {
   const lines: string[] = [];
@@ -56,7 +57,7 @@ export default function lspExtension(pi: ExtensionAPI) {
   registerLspHooks(pi, runtime);
 
   // Expose breadcrumbs helper via events
-  pi.events.on("lsp:get-breadcrumbs", async (data: { filePath: string; line: number; character: number }, callback: (breadcrumbs: string) => void) => {
+  ((pi.events.on as unknown) as (eventName: string, handler: (data: { filePath: string; line: number; character: number }, callback: (breadcrumbs: string) => void) => Promise<void>) => void)("lsp:get-breadcrumbs", async (data, callback) => {
     try {
       const summary = await runtime.run(data.filePath, async (client) => {
         return await client.request("textDocument/documentSymbol", {
@@ -87,12 +88,9 @@ export default function lspExtension(pi: ExtensionAPI) {
 
   pi.on("session_start", async (_event, ctx) => {
     runtime.setCwd(ctx.cwd);
-    console.log("[lsp-extension] startup");
   });
 
   pi.on("session_shutdown", async (_event, _ctx) => {
-    console.log("[lsp-extension] shutdown");
-
     for (const cleanup of [...activeCleanups]) {
       cleanup();
       activeCleanups.delete(cleanup);
@@ -116,7 +114,7 @@ export default function lspExtension(pi: ExtensionAPI) {
         return;
       }
 
-      await ctx.ui.custom<void>((tui, _theme, _keybindings, done) => {
+      await openManagedOverlay<void>(ctx.ui, { id: "lsp-status" }, (tui, _theme, _keybindings, done) => {
         let closed = false;
 
         const close = () => {
@@ -145,10 +143,10 @@ export default function lspExtension(pi: ExtensionAPI) {
         });
 
         return {
-          render(width) {
+          render(width: number) {
             return panel.render(width);
           },
-          handleInput(data) {
+          handleInput(data: string) {
             panel.handleInput?.(data);
           },
           invalidate() {
@@ -159,14 +157,9 @@ export default function lspExtension(pi: ExtensionAPI) {
           },
         };
       }, {
-        overlay: true,
-        overlayOptions: {
-          anchor: "center",
-          width: 82,
-          minWidth: 40,
-          maxHeight: "80%",
-          margin: 1,
-        },
+        width: 82,
+        minWidth: 40,
+        maxHeight: "80%",
       });
     },
   });

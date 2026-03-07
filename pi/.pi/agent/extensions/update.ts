@@ -8,6 +8,7 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 type InstallMethod = "bun" | "npm" | "native";
+type NotifyLevel = "info" | "warning" | "error";
 
 interface DetectionResult {
     method: InstallMethod;
@@ -100,7 +101,7 @@ async function detectInstallMethod(pi: ExtensionAPI): Promise<DetectionResult> {
 async function runUpdate(
     pi: ExtensionAPI,
     method: InstallMethod,
-    ctx: { ui: { notify: (msg: string, type: "info" | "error" | "success" | "warning") => void }; hasUI: boolean }
+    ctx: { ui: { notify: (msg: string, type: NotifyLevel) => void }; hasUI: boolean }
 ): Promise<{ success: boolean; output: string }> {
     let result: { stdout: string; stderr: string; code: number };
     let command: string;
@@ -139,8 +140,8 @@ export default function (pi: ExtensionAPI) {
         description: "Update pi-coding-agent to the latest version",
         handler: async (_args, ctx) => {
             const notify = ctx.hasUI
-                ? (msg: string, type: "info" | "error" | "success" | "warning") => ctx.ui.notify(msg, type)
-                : (msg: string, _type: "info" | "error" | "success" | "warning") => console.log(msg);
+                ? (msg: string, type: NotifyLevel) => ctx.ui.notify(msg, type)
+                : (msg: string, _type: NotifyLevel) => console.log(msg);
 
             notify("Detecting installation method...", "info");
 
@@ -154,7 +155,7 @@ export default function (pi: ExtensionAPI) {
                 });
 
                 if (success) {
-                    notify("Update complete! Restart pi to use the new version.", "success");
+                    notify("Update complete! Restart pi to use the new version.", "info");
                 } else if (detection.method !== "native") {
                     notify(`Update failed: ${output}`, "error");
                 }
@@ -186,7 +187,7 @@ export default function (pi: ExtensionAPI) {
 
                 const { success, output } = await runUpdate(pi, detection.method, {
                     ui: {
-                        notify: (msg, _type) => console.log(msg),
+                        notify: (msg: string, _type: NotifyLevel) => console.log(msg),
                     },
                     hasUI: false,
                 });
@@ -210,7 +211,7 @@ export default function (pi: ExtensionAPI) {
                 const { success, output } = await runUpdate(pi, detection.method, ctx);
 
                 if (success) {
-                    ctx.ui.notify("Update complete! Restart pi to use the new version.", "success");
+                    ctx.ui.notify("Update complete! Restart pi to use the new version.", "info");
                 } else if (detection.method !== "native") {
                     ctx.ui.notify(`Update failed: ${output}`, "error");
                 }

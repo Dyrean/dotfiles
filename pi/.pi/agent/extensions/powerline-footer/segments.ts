@@ -372,7 +372,7 @@ const hostnameSegment: StatusLineSegment = {
   id: "hostname",
   render() {
     const icons = getIcons();
-    const name = osHostname().split(".")[0];
+    const name = osHostname().split(".")[0] ?? "host";
     return { content: withIcon(icons.host, name), visible: true };
   },
 };
@@ -405,13 +405,14 @@ const extensionStatusesSegment: StatusLineSegment = {
   id: "extension_statuses",
   render(ctx) {
     const statuses = ctx.extensionStatuses;
-    if (!statuses || statuses.size === 0) return { content: "", visible: false };
+    if (!statuses || statuses.length === 0) return { content: "", visible: false };
 
     const parts: string[] = [];
-    for (const [statusKey, value] of statuses.entries()) {
-      if (!value || shouldHideExtensionStatus(statusKey, value)) continue;
-      if (!value.trimStart().startsWith("[")) {
-        parts.push(value);
+    for (const status of statuses) {
+      if (status.display !== "inline") continue;
+      if (shouldHideExtensionStatus(status.id, status.text)) continue;
+      if (!status.text.trimStart().startsWith("[")) {
+        parts.push(status.text);
       }
     }
 

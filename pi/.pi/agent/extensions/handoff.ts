@@ -18,6 +18,7 @@
 
 import { complete, type Message } from "@mariozechner/pi-ai";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, SessionEntry } from "@mariozechner/pi-coding-agent";
+import { openManagedOverlay } from "../prelude/ui/overlay-manager.js";
 import { BorderedLoader, convertToLlm, serializeConversation } from "@mariozechner/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 
@@ -81,9 +82,9 @@ async function performHandoff(
     const currentSessionFile = ctx.sessionManager.getSessionFile();
 
     // Generate the handoff prompt with loader UI
-    const result = await ctx.ui.custom<string | null>((tui, theme, _kb, done) => {
-        const loader = new BorderedLoader(tui, theme, `Generating handoff prompt...`);
-        loader.onAbort = () => done(null);
+	const result = await openManagedOverlay<string | null>(ctx.ui, { id: "handoff-generate", replace: true }, (tui, theme, _kb, done) => {
+		const loader = new BorderedLoader(tui, theme, `Generating handoff prompt...`);
+		loader.onAbort = () => done(null);
 
         const doGenerate = async () => {
             const apiKey = await ctx.modelRegistry.getApiKey(ctx.model!);
@@ -115,15 +116,15 @@ async function performHandoff(
                 .join("\n");
         };
 
-        doGenerate()
-            .then(done)
-            .catch((err) => {
-                console.error("Handoff generation failed:", err);
-                done(null);
-            });
+		doGenerate()
+			.then(done)
+			.catch((err) => {
+				console.error("Handoff generation failed:", err);
+				done(null);
+			});
 
-        return loader;
-    });
+		return loader;
+	});
 
     if (result === null) {
         return "Handoff cancelled.";

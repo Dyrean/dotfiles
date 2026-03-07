@@ -17,6 +17,8 @@
  */
 
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
+import { bindStatusRegistry, clearStatusEntry, setStatusEntry } from "../prelude/ui/status-registry.js";
+import { bindWidgetRegistry, clearWidgetEntry, setWidgetEntry } from "../prelude/ui/widget-registry.js";
 
 // Tools available in orchestrator mode - subagent for delegation, subagent_status for async monitoring
 const ORC_MODE_TOOLS = ["subagent", "subagent_status"];
@@ -36,16 +38,21 @@ export default function orcModeExtension(pi: ExtensionAPI) {
 
     // Helper to update status displays
     function updateStatus(ctx: ExtensionContext) {
+        bindStatusRegistry(ctx);
+        bindWidgetRegistry(ctx);
         if (orcModeEnabled) {
-            ctx.ui.setStatus("orc-mode", ctx.ui.theme.fg("warning", "🎭 ORC"));
-            ctx.ui.setWidget("orc-mode", [
+            setStatusEntry("orc-mode", {
+                text: ctx.ui.theme.fg("warning", "🎭 ORC"),
+                priority: 100,
+            });
+            setWidgetEntry("orc-mode", [
                 ctx.ui.theme.fg("warning", "🎭 Orchestrator mode active"),
                 ctx.ui.theme.fg("muted", "Only subagent tool available"),
                 ctx.ui.theme.fg("dim", "Use /orc to disable"),
             ]);
         } else {
-            ctx.ui.setStatus("orc-mode", undefined);
-            ctx.ui.setWidget("orc-mode", undefined);
+            clearStatusEntry("orc-mode");
+            clearWidgetEntry("orc-mode");
         }
     }
 

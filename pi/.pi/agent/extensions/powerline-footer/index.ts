@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ReadonlyFooterDataProvider, Theme } from "@mariozechner/pi-coding-agent";
+import { CustomEditor, type ExtensionAPI, type ReadonlyFooterDataProvider, type Theme } from "@mariozechner/pi-coding-agent";
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 import { visibleWidth } from "@mariozechner/pi-tui";
 import type { ColorScheme, SegmentContext, StatusLineSegmentId, StatusLineSegmentOptions } from "./types.js";
@@ -6,7 +6,12 @@ import { getSeparator } from "./separators.js";
 import { renderSegment } from "./segments.js";
 import { getVcsStatus, invalidateVcsStatus, invalidateVcsBranch } from "./vcs-status.js";
 import { fg, getDefaultColors } from "./theme.js";
-import { isBracketStatusLine, shouldHideExtensionStatus } from "../../prelude/extension-status.js";
+import { bindEditorPluginStack, registerEditorPlugin } from "../../prelude/ui/editor-plugin-stack.js";
+import { bindFooterManager, setFooterRenderer } from "../../prelude/ui/footer-manager.js";
+import type { StatusSnapshotEntry } from "../../prelude/ui/status-registry.js";
+import { getStatusEntries } from "../../prelude/ui/status-registry.js";
+import { normalizeLegacyStatusEntry, shouldHideExtensionStatus } from "../../prelude/extension-status.js";
+import { bindWidgetRegistry, setWidgetEntry } from "../../prelude/ui/widget-registry.js";
 
 const STATIC_SEGMENTS: StatusLineSegmentId[] = [
   "pi",
@@ -25,7 +30,7 @@ const STATIC_SEGMENT_OPTIONS: StatusLineSegmentOptions = {
 
 const STATIC_SEPARATOR = getSeparator("powerline-thin");
 const STATIC_COLORS: ColorScheme = getDefaultColors();
-const EMPTY_STATUSES = new Map<string, string>();
+const EMPTY_STATUSES: readonly StatusSnapshotEntry[] = [];
 const VCS_REFRESH_DELAYS = [0, 120, 320, 700, 1400] as const;
 
 let currentBreadcrumbs = "";
@@ -165,6 +170,24 @@ function mightChangeVcsBranch(cmd: string): boolean {
   return vcsBranchPatterns.some((p) => p.test(cmd));
 }
 
+function getExtensionStatusEntries(footerDataRef: ReadonlyFooterDataProvider | null): readonly StatusSnapshotEntry[] {
+  const registryEntries = getStatusEntries();
+  const legacyStatuses = footerDataRef?.getExtensionStatuses();
+  if (!legacyStatuses || legacyStatuses.size === 0) {
+    return registryEntries;
+  }
+
+  const normalizedLegacyEntries = [...legacyStatuses.entries()]
+    .map(([statusKey, value]) => normalizeLegacyStatusEntry(statusKey, value))
+    .filter((entry): entry is StatusSnapshotEntry => Boolean(entry));
+
+  if (registryEntries.length === 0) {
+    return normalizedLegacyEntries;
+  }
+
+  return [...registryEntries, ...normalizedLegacyEntries];
+}
+
 export default function powerlineFooter(pi: ExtensionAPI) {
   let sessionStartTime = Date.now();
   let currentCtx: any = null;
@@ -179,6 +202,100 @@ export default function powerlineFooter(pi: ExtensionAPI) {
   let lastLayoutTimestamp = 0;
 
   let pendingRenderTimers: ReturnType<typeof setTimeout>[] = [];
+
+  registerEditorPlugin("powerline-footer", (factory, ctx) => {
+    let autocompleteFixed = false;
+
+    return (tui, editorTheme, keybindings) => {
+      const editor = (factory(tui, editorTheme, keybindings) || new CustomEditor(tui as never, editorTheme as never, keybindings as never)) as any;
+
+      const originalHandleInput = editor.handleInput.bind(editor);
+      editor.handleInput = (data: string) => {
+        if (!autocompleteFixed && !editor.autocompleteProvider) {
+          autocompleteFixed = true;
+          bindEditorPluginStack(ctx);
+          editor.handleInput(data);
+          return;
+        }
+        originalHandleInput(data);
+      };
+
+      const originalRender = editor.render.bind(editor);
+      editor.render = (width: number): string[] => {
+        if (width < 10) {
+          return originalRender(width);
+        }
+
+        const thinkingLevel = resolveThinkingLevel(currentCtx);
+        const borderColor = getBorderColorForThinkingLevel(thinkingLevel);
+        const bc = (s: string) => (ctx as any).ui.theme.fg(borderColor, s);
+
+        const topLeft = bc("╭─");
+        const topRight = bc("─╮");
+        const bottomLeft = bc("╰─");
+        const bottomRight = bc("─╯");
+        const vertical = bc("│");
+
+        const contentWidth = Math.max(1, width - 6);
+        const lines = originalRender(contentWidth);
+
+        if (lines.length === 0 || !currentCtx) return lines;
+
+        let bottomBorderIndex = lines.length - 1;
+        for (let i = lines.length - 1; i >= 1; i--) {
+          const stripped = lines[i]?.replace(/\x1b\[[0-9;]*m/g, "") || "";
+          if (stripped.length > 0 && /^─{3,}/.test(stripped)) {
+            bottomBorderIndex = i;
+            break;
+          }
+        }
+
+        const result: string[] = [];
+
+        const layout = getResponsiveLayout(width, (ctx as any).ui.theme);
+        const statusContent = layout.topContent;
+        const statusWidth = visibleWidth(statusContent);
+        const topFillWidth = width - 4;
+        const fillWidth = Math.max(0, topFillWidth - statusWidth);
+
+        result.push(topLeft + statusContent + bc("─".repeat(fillWidth)) + topRight);
+
+        for (let i = 1; i < bottomBorderIndex; i++) {
+          const rawLine = lines[i] || "";
+          const line = highlightImageTokenChips(rawLine, (ctx as any).ui.theme);
+          const lineWidth = visibleWidth(rawLine);
+          const padding = " ".repeat(Math.max(0, contentWidth - lineWidth));
+
+          const isLastContent = i === bottomBorderIndex - 1;
+          if (isLastContent) {
+            result.push(`${bottomLeft} ${line}${padding} ${bottomRight}`);
+          } else {
+            result.push(`${vertical}  ${line}${padding}  ${vertical}`);
+          }
+        }
+
+        if (bottomBorderIndex === 1) {
+          const padding = " ".repeat(contentWidth);
+          result.push(`${bottomLeft} ${padding} ${bottomRight}`);
+        }
+
+        for (let i = bottomBorderIndex + 1; i < lines.length; i++) {
+          result.push(lines[i] || "");
+        }
+
+        return result;
+      };
+
+      return editor;
+    };
+  }, 100);
+
+  const resolveGetThinkingLevel = (ctx: unknown): (() => string) | null => {
+    const candidate = ctx as { getThinkingLevel?: () => string };
+    return typeof candidate.getThinkingLevel === "function"
+      ? () => candidate.getThinkingLevel!()
+      : null;
+  };
 
   const clearPendingRenderTimers = () => {
     for (const timer of pendingRenderTimers) {
@@ -251,12 +368,13 @@ export default function powerlineFooter(pi: ExtensionAPI) {
     invalidateVcsStatus();
     invalidateVcsBranch();
 
-    getThinkingLevelFn = typeof ctx.getThinkingLevel === "function"
-      ? () => ctx.getThinkingLevel()
-      : null;
+    getThinkingLevelFn = resolveGetThinkingLevel(ctx);
 
     if (ctx.hasUI) {
       setupCustomEditor(ctx);
+      bindEditorPluginStack(ctx);
+      bindFooterManager(ctx);
+      bindWidgetRegistry(ctx);
       scheduleVcsRefreshRenders();
     }
   });
@@ -268,10 +386,13 @@ export default function powerlineFooter(pi: ExtensionAPI) {
     invalidateVcsStatus();
     invalidateVcsBranch();
 
-    getThinkingLevelFn = typeof ctx.getThinkingLevel === "function"
-      ? () => ctx.getThinkingLevel()
-      : null;
+    getThinkingLevelFn = resolveGetThinkingLevel(ctx);
 
+    if (ctx.hasUI) {
+      bindEditorPluginStack(ctx);
+      bindFooterManager(ctx);
+      bindWidgetRegistry(ctx);
+    }
     scheduleVcsRefreshRenders();
   });
 
@@ -286,7 +407,7 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           line: input.line ?? (input.offset ? 1 : 1), // Default to 1 if not specified
           character: 1,
         };
-        pi.events.emit("lsp:get-breadcrumbs", lastLspFocus, (b: string) => {
+        (pi.events.emit as (eventName: string, data: unknown, callback: (breadcrumbs: string) => void) => void)("lsp:get-breadcrumbs", lastLspFocus, (b: string) => {
           currentBreadcrumbs = b;
           tuiRef?.requestRender();
         });
@@ -301,7 +422,7 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           line: input.line,
           character: input.character ?? 1,
         };
-        pi.events.emit("lsp:get-breadcrumbs", lastLspFocus, (b: string) => {
+        (pi.events.emit as (eventName: string, data: unknown, callback: (breadcrumbs: string) => void) => void)("lsp:get-breadcrumbs", lastLspFocus, (b: string) => {
           currentBreadcrumbs = b;
           tuiRef?.requestRender();
         });
@@ -374,7 +495,7 @@ export default function powerlineFooter(pi: ExtensionAPI) {
       sessionStartTime,
       vcs: vcsStatus,
       breadcrumbs: currentBreadcrumbs,
-      extensionStatuses: footerDataRef?.getExtensionStatuses() ?? EMPTY_STATUSES,
+      extensionStatuses: getExtensionStatusEntries(footerDataRef) ?? EMPTY_STATUSES,
       options: STATIC_SEGMENT_OPTIONS,
       theme,
       colors: STATIC_COLORS,
@@ -404,98 +525,7 @@ export default function powerlineFooter(pi: ExtensionAPI) {
   }
 
   function setupCustomEditor(ctx: any) {
-    import("@mariozechner/pi-coding-agent").then(({ CustomEditor }) => {
-      let currentEditor: any = null;
-      let autocompleteFixed = false;
-
-      const editorFactory = (tui: any, editorTheme: any, keybindings: any) => {
-        const editor = new CustomEditor(tui, editorTheme, keybindings);
-        currentEditor = editor;
-
-        const originalHandleInput = editor.handleInput.bind(editor);
-        editor.handleInput = (data: string) => {
-          if (!autocompleteFixed && !(editor as any).autocompleteProvider) {
-            autocompleteFixed = true;
-            ctx.ui.setEditorComponent(editorFactory);
-            currentEditor?.handleInput(data);
-            return;
-          }
-          originalHandleInput(data);
-        };
-
-        const originalRender = editor.render.bind(editor);
-
-        editor.render = (width: number): string[] => {
-          if (width < 10) {
-            return originalRender(width);
-          }
-
-          const thinkingLevel = resolveThinkingLevel(currentCtx);
-          const borderColor = getBorderColorForThinkingLevel(thinkingLevel);
-          const bc = (s: string) => ctx.ui.theme.fg(borderColor, s);
-
-          const topLeft = bc("╭─");
-          const topRight = bc("─╮");
-          const bottomLeft = bc("╰─");
-          const bottomRight = bc("─╯");
-          const vertical = bc("│");
-
-          const contentWidth = Math.max(1, width - 6);
-          const lines = originalRender(contentWidth);
-
-          if (lines.length === 0 || !currentCtx) return lines;
-
-          let bottomBorderIndex = lines.length - 1;
-          for (let i = lines.length - 1; i >= 1; i--) {
-            const stripped = lines[i]?.replace(/\x1b\[[0-9;]*m/g, "") || "";
-            if (stripped.length > 0 && /^─{3,}/.test(stripped)) {
-              bottomBorderIndex = i;
-              break;
-            }
-          }
-
-          const result: string[] = [];
-
-          const layout = getResponsiveLayout(width, ctx.ui.theme);
-          const statusContent = layout.topContent;
-          const statusWidth = visibleWidth(statusContent);
-          const topFillWidth = width - 4;
-          const fillWidth = Math.max(0, topFillWidth - statusWidth);
-
-          result.push(topLeft + statusContent + bc("─".repeat(fillWidth)) + topRight);
-
-          for (let i = 1; i < bottomBorderIndex; i++) {
-            const rawLine = lines[i] || "";
-            const line = highlightImageTokenChips(rawLine, ctx.ui.theme);
-            const lineWidth = visibleWidth(rawLine);
-            const padding = " ".repeat(Math.max(0, contentWidth - lineWidth));
-
-            const isLastContent = i === bottomBorderIndex - 1;
-            if (isLastContent) {
-              result.push(`${bottomLeft} ${line}${padding} ${bottomRight}`);
-            } else {
-              result.push(`${vertical}  ${line}${padding}  ${vertical}`);
-            }
-          }
-
-          if (bottomBorderIndex === 1) {
-            const padding = " ".repeat(contentWidth);
-            result.push(`${bottomLeft} ${padding} ${bottomRight}`);
-          }
-
-          for (let i = bottomBorderIndex + 1; i < lines.length; i++) {
-            result.push(lines[i] || "");
-          }
-
-          return result;
-        };
-
-        return editor;
-      };
-
-      ctx.ui.setEditorComponent(editorFactory);
-
-      ctx.ui.setFooter((tui: any, _theme: Theme, footerData: ReadonlyFooterDataProvider) => {
+      setFooterRenderer("powerline-footer", (tui: any, _theme: Theme, footerData: ReadonlyFooterDataProvider) => {
         footerDataRef = footerData;
         tuiRef = tui;
         scheduleVcsRefreshRenders();
@@ -521,7 +551,7 @@ export default function powerlineFooter(pi: ExtensionAPI) {
         };
       });
 
-      ctx.ui.setWidget("powerline-secondary", (_tui: any, theme: Theme) => {
+      setWidgetEntry("powerline-secondary", (_tui: any, theme: Theme) => {
         return {
           dispose() { },
           invalidate() { },
@@ -536,25 +566,24 @@ export default function powerlineFooter(pi: ExtensionAPI) {
         };
       }, { placement: "belowEditor" });
 
-      ctx.ui.setWidget("powerline-status", () => {
+      setWidgetEntry("powerline-status", () => {
         return {
           dispose() { },
           invalidate() { },
           render(width: number): string[] {
             if (!currentCtx || !footerDataRef) return [];
 
-            const statuses = footerDataRef.getExtensionStatuses();
-            if (!statuses || statuses.size === 0) return [];
+            const statuses = getExtensionStatusEntries(footerDataRef);
+            if (statuses.length === 0) return [];
 
             const notifications: string[] = [];
-            for (const [statusKey, value] of statuses.entries()) {
-              if (!value || shouldHideExtensionStatus(statusKey, value)) continue;
-              if (isBracketStatusLine(value)) {
-                const lineContent = ` ${value}`;
-                const contentWidth = visibleWidth(lineContent);
-                if (contentWidth <= width) {
-                  notifications.push(lineContent);
-                }
+            for (const status of statuses) {
+              if (status.display !== "banner") continue;
+              if (shouldHideExtensionStatus(status.id, status.text)) continue;
+              const lineContent = ` [${status.text}]`;
+              const contentWidth = visibleWidth(lineContent);
+              if (contentWidth <= width) {
+                notifications.push(lineContent);
               }
             }
 
@@ -562,8 +591,5 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           },
         };
       }, { placement: "aboveEditor" });
-    }).catch(() => {
-      // Ignore editor setup failures.
-    });
   }
 }

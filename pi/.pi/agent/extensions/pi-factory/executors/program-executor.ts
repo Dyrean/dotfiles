@@ -5,6 +5,7 @@ import { FactoryError, toErrorDetails } from "../errors.js";
 import type { ObservabilityStore } from "../observability.js";
 import { createFactory, patchConsole, patchPromiseAll, prepareProgramModule, preflightTypecheck } from "../runtime.js";
 import type { ExecutionResult, RunSummary } from "../types.js";
+import { openManagedOverlay } from "../../../prelude/ui/overlay-manager.js";
 
 // ── Confirmation UI ────────────────────────────────────────────────────
 
@@ -14,7 +15,9 @@ export async function confirmExecution(ctx: ExtensionContext, code: string): Pro
 	const lines = highlightCode(code, "typescript");
 	const displayLines = lines.length > 0 ? lines : code.split("\n");
 
-	const result = await ctx.ui.custom<{ approved: boolean; reason?: string }>(
+	const result = await openManagedOverlay<{ approved: boolean; reason?: string }>(
+		ctx.ui,
+		{ id: "pi-factory-confirm-execution", replace: true },
 		(tui, theme, _keybindings, done) => {
 			let offset = 0;
 			let collectingReason = false;
@@ -86,7 +89,7 @@ export async function confirmExecution(ctx: ExtensionContext, code: string): Pro
 				},
 			};
 		},
-		{ overlay: true, overlayOptions: { anchor: "center", width: "92%", maxHeight: "90%", margin: 1 } },
+		{ width: "92%", maxHeight: "90%" },
 	);
 
 	return result ?? { approved: false };

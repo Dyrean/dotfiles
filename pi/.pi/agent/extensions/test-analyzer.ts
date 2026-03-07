@@ -51,7 +51,7 @@ function parseFailures(text: string): string[] {
 }
 
 export default function (pi: ExtensionAPI) {
-    pi.on("tool_result", async (event, _ctx) => {
+    pi.on("tool_result", async (event, ctx) => {
         if (event.toolName !== "bash" || event.isError) return;
 
         const input = event.input as { command?: string };

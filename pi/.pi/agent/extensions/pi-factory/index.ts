@@ -14,6 +14,7 @@ import { FactoryWidget } from "./widget.js";
 import { FactoryMonitor } from "./monitor.js";
 import { registerMessageRenderer, notifyCompletion } from "./notify.js";
 import type { RunSummary } from "./types.js";
+import { openManagedOverlay, openManagedView } from "../../prelude/ui/overlay-manager.js";
 
 function writeRunJson(summary: RunSummary): void {
 	const dir = summary.observability?.artifactsDir;
@@ -74,7 +75,8 @@ function buildPrimaryContent(summary: RunSummary, forUpdate = false): string {
 	if (summary.error) return `${summary.error.code}: ${summary.error.message}`;
 	if (summary.results.length === 0) return forUpdate ? "(running...)" : "Completed.";
 	if (summary.results.length === 1) {
-		return summary.results[0].text || (forUpdate ? "(running...)" : "Completed.");
+		const result = summary.results[0];
+		return result?.text || (forUpdate ? "(running...)" : "Completed.");
 	}
 	const lines = [`Program completed with ${summary.results.length} result(s):`];
 	for (const r of summary.results) {
@@ -254,7 +256,9 @@ export default function (pi: ExtensionAPI) {
 		// handler returns.  setTimeout(0) schedules after init() completes.
 		if (pi.getFlag("factory") === true) {
 			setTimeout(async () => {
-				await ctx.ui.custom<void>(
+				await openManagedView<void>(
+					ctx.ui,
+					{ id: "pi-factory-fullscreen-monitor" },
 					(tui, theme, _kb, done) =>
 						new FactoryMonitor({
 							tui,
@@ -287,16 +291,14 @@ export default function (pi: ExtensionAPI) {
 	pi.registerCommand("factory", {
 		description: "Show subagent run status",
 		handler: async (_args, ctx) => {
-			await ctx.ui.custom<void>(
+			await openManagedOverlay<void>(
+				ctx.ui,
+				{ id: "pi-factory-monitor" },
 				(tui, theme, _kb, done) => new FactoryMonitor({ tui, theme, done, registry }),
 				{
-					overlay: true,
-					overlayOptions: {
-						width: "90%",
-						minWidth: 60,
-						maxHeight: "95%",
-						anchor: "center",
-					},
+					width: "90%",
+					minWidth: 60,
+					maxHeight: "95%",
 				},
 			);
 		},

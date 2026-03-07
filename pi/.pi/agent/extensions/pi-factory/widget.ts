@@ -1,6 +1,7 @@
 import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
 import type { RunRecord } from "./registry.js";
 import { formatElapsed, statusIcon, agentLabel } from "./format.js";
+import { bindWidgetRegistry, clearWidgetEntry, setWidgetEntry } from "../../prelude/ui/widget-registry.js";
 
 const MAX_VISIBLE = 6;
 
@@ -31,7 +32,8 @@ function infoLabel(run: RunRecord): string {
 function outputTail(run: RunRecord): string {
 	const results = run.summary.results;
 	for (let i = results.length - 1; i >= 0; i--) {
-		if (results[i].text) return truncate(results[i].text, 60);
+		const result = results[i];
+		if (result?.text) return truncate(result.text, 60);
 	}
 	if (run.summary.error?.message) return truncate(run.summary.error.message, 60);
 	return "";
@@ -57,6 +59,7 @@ export class FactoryWidget {
 	}
 
 	update(runs: RunRecord[], ctx: ExtensionContext): void {
+		bindWidgetRegistry(ctx);
 		if (runs.length === 0) {
 			this.clear(ctx);
 			return;
@@ -77,10 +80,11 @@ export class FactoryWidget {
 			...visible.map((r) => renderLine(r, now)),
 		];
 
-		ctx.ui.setWidget(this.key, lines);
+		setWidgetEntry(this.key, lines);
 	}
 
 	clear(ctx: ExtensionContext): void {
-		ctx.ui.setWidget(this.key, undefined);
+		bindWidgetRegistry(ctx);
+		clearWidgetEntry(this.key);
 	}
 }

@@ -86,6 +86,15 @@ interface WebSearchDetails {
 	type?: string;
 }
 
+type ToolRenderResultDetails = { isError?: boolean };
+
+function toToolResult<Details extends object>(details: Details, text: string, isError = false) {
+	return {
+		content: [{ type: "text" as const, text }],
+		details: { ...details, isError },
+	};
+}
+
 interface McpSearchRequest {
 	jsonrpc: string;
 	id: number;
@@ -154,9 +163,7 @@ export default function (pi: ExtensionAPI) {
 				};
 			}
 
-			onUpdate?.({
-				content: [{ type: "text", text: `Fetching ${url}...` }],
-			});
+			onUpdate?.(toToolResult({ url, format } as WebFetchDetails, `Fetching ${url}...`));
 
 			const timeout = Math.min(
 				(timeoutSec ?? DEFAULT_TIMEOUT / 1000) * 1000,
@@ -315,7 +322,7 @@ export default function (pi: ExtensionAPI) {
 				return new Text(theme.fg("warning", "Fetching..."), 0, 0);
 			}
 
-			if (result.isError) {
+			if ((details as ToolRenderResultDetails | undefined)?.isError) {
 				const errorText =
 					result.content[0]?.type === "text"
 						? (result.content[0] as { type: "text"; text: string }).text
@@ -402,9 +409,7 @@ export default function (pi: ExtensionAPI) {
 				contextMaxCharacters,
 			} = params;
 
-			onUpdate?.({
-				content: [{ type: "text", text: `Searching for "${query}"...` }],
-			});
+			onUpdate?.(toToolResult({ query, numResults, type } as WebSearchDetails, `Searching for "${query}"...`));
 
 			const searchRequest: McpSearchRequest = {
 				jsonrpc: "2.0",
@@ -471,7 +476,9 @@ export default function (pi: ExtensionAPI) {
 							data.result.content.length > 0
 						) {
 							// Apply truncation to search results
-							const truncation = truncateHead(data.result.content[0].text, {
+							const firstContent = data.result.content[0];
+							if (!firstContent) continue;
+							const truncation = truncateHead(firstContent.text, {
 								maxLines: DEFAULT_MAX_LINES,
 								maxBytes: DEFAULT_MAX_BYTES,
 							});
@@ -543,7 +550,7 @@ export default function (pi: ExtensionAPI) {
 				return new Text(theme.fg("warning", "Searching..."), 0, 0);
 			}
 
-			if (result.isError) {
+			if ((details as ToolRenderResultDetails | undefined)?.isError) {
 				const errorText =
 					result.content[0]?.type === "text"
 						? (result.content[0] as { type: "text"; text: string }).text

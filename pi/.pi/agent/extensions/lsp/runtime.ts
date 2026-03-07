@@ -46,7 +46,7 @@ function now(): number {
 function parseKey(key: string): { serverId: string; root: string } {
   const [serverId, ...rest] = key.split("::");
   return {
-    serverId,
+    serverId: serverId ?? "",
     root: rest.join("::"),
   };
 }

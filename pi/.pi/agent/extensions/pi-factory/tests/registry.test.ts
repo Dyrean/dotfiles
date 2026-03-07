@@ -40,7 +40,7 @@ test("getVisible excludes acknowledged completed runs", () => {
 
 	const visible = reg.getVisible();
 	assert.equal(visible.length, 1);
-	assert.equal(visible[0].runId, "r1");
+	assert.equal(visible[0]?.runId, "r1");
 
 	// getAll still returns everything
 	assert.equal(reg.getAll().length, 2);
@@ -53,7 +53,7 @@ test("getActive filters running only", () => {
 	reg.complete("r2", { ...makeSummary("r2"), status: "done" });
 
 	assert.equal(reg.getActive().length, 1);
-	assert.equal(reg.getActive()[0].runId, "r1");
+	assert.equal(reg.getActive()[0]?.runId, "r1");
 });
 
 test("complete sets status and completedAt", () => {

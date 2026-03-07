@@ -396,7 +396,7 @@ export class LspClient {
       this.inflight.set(id, {
         id,
         method,
-        resolve,
+        resolve: resolve as (value: unknown) => void,
         reject,
         timeout,
         abortCleanup,

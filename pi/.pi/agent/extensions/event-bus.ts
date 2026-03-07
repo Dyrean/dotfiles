@@ -7,6 +7,7 @@
  */
 
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
+import { bindStatusRegistry, clearStatusEntry, setStatusEntry } from "../prelude/ui/status-registry.js";
 
 interface GlobalState {
   discoveredAgents: string[];
@@ -24,24 +25,38 @@ export default function (pi: ExtensionAPI) {
 
   const updateStatus = () => {
     if (!currentCtx) return;
+    bindStatusRegistry(currentCtx);
 
-    // Update the footer status line for this extension
     const agentCount = state.discoveredAgents.length;
-    const agentStatus = agentCount > 0 ? `[${agentCount} agents]` : "";
-    const lspStatus = state.lspStatus !== "off" ? `[LSP: ${state.lspStatus}]` : "";
+    const parts: string[] = [];
+    if (agentCount > 0) {
+      parts.push(`${agentCount} agent${agentCount === 1 ? "" : "s"}`);
+    }
+    if (state.lspStatus !== "off") {
+      parts.push(`LSP: ${state.lspStatus}`);
+    }
 
-    currentCtx.ui.setStatus("bus", `${agentStatus} ${lspStatus}`.trim());
+    if (parts.length === 0) {
+      clearStatusEntry("bus");
+      return;
+    }
+
+    setStatusEntry("bus", {
+      text: parts.join(" | "),
+      display: "banner",
+      priority: 10,
+    });
   };
 
   pi.on("session_start", async (_event, ctx) => {
     currentCtx = ctx;
+    bindStatusRegistry(ctx);
     updateStatus();
   });
 
   pi.on("session_shutdown", () => {
-    if (currentCtx) {
-      currentCtx.ui.setStatus("bus", undefined);
-    }
+    clearStatusEntry("bus");
+    currentCtx = undefined;
   });
 
   // --- Event Listeners ---
