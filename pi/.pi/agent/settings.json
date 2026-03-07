@@ -1,29 +1,29 @@
 {
-	"lastChangelogVersion": "0.55.0",
-	"defaultProvider": "google-gemini-cli",
-	"defaultModel": "gemini-3-flash-preview",
-	"defaultThinkingLevel": "off",
-	"theme": "dark",
-	"packages": [
-		"npm:pi-mcp-adapter",
-		"npm:@aliou/pi-guardrails",
-		"npm:pi-agentic-compaction",
-		"npm:pi-extmgr",
-		"npm:@tmustier/pi-usage-extension"
-	],
-	"hideThinkingBlock": true,
-	"notification": {
-		"enabled": true,
-		"sound": {
-			"enabled": true,
-			"player": "auto"
-		},
-		"toast": {
-			"enabled": false
-		},
-		"events": {
-			"agentEnd": true,
-			"sessionStart": true
-		}
-	}
+  "lastChangelogVersion": "0.56.3",
+  "defaultProvider": "google-gemini-cli",
+  "defaultModel": "gemini-3-flash-preview",
+  "defaultThinkingLevel": "off",
+  "theme": "dark",
+  "packages": [
+    "npm:pi-mcp-adapter",
+    "npm:@aliou/pi-guardrails",
+    "npm:pi-agentic-compaction",
+    "npm:pi-extmgr",
+    "npm:@tmustier/pi-usage-extension"
+  ],
+  "hideThinkingBlock": true,
+  "notification": {
+    "enabled": true,
+    "sound": {
+      "enabled": true,
+      "player": "auto"
+    },
+    "toast": {
+      "enabled": false
+    },
+    "events": {
+      "agentEnd": true,
+      "sessionStart": true
+    }
+  }
 }

@@ -1,16 +1,27 @@
 # Font settings
-font-size = 12
+font-family = JetBrains Mono
+font-size = 13
 
 # Window settings
 background-opacity = 0.9
+window-padding-x = 10
+window-padding-y = 10
 
 # Behavior settings
 confirm-close-surface = false
 clipboard-paste-protection = false
 unfocused-split-opacity = 1.0
+shell-integration = detect
+
+# Cursor settings
+cursor-style = block
+cursor-style-blink = false
 
 # Theme
 theme=TokyoNight
 
+# Scrolling
+scrollback-limit = 10000000
+
 # Updates
-auto-update-channel = tip
+auto-update-channel = stable

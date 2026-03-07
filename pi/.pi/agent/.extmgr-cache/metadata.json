@@ -8,7 +8,7 @@
     },
     "pi-agentic-compaction": {
       "name": "pi-agentic-compaction",
-      "timestamp": 1772031709844,
+      "timestamp": 1772882349115,
       "size": 24043
     },
     "pi-mermaid": {
@@ -18,24 +18,24 @@
     },
     "pi-mcp-adapter": {
       "name": "pi-mcp-adapter",
-      "timestamp": 1772031710226,
+      "timestamp": 1772882349529,
       "size": 204504
     },
     "@aliou/pi-guardrails": {
       "name": "@aliou/pi-guardrails",
-      "timestamp": 1772031711302,
-      "description": "Security hooks to prevent potentially dangerous operations.",
-      "size": 68656
+      "description": "Security hooks for Pi to reduce accidental destructive actions and secret-file access.",
+      "timestamp": 1772882350417,
+      "size": 112257
     },
     "pi-extmgr": {
       "name": "pi-extmgr",
-      "timestamp": 1772031711571,
+      "timestamp": 1772882349525,
       "size": 216300
     },
     "@tmustier/pi-usage-extension": {
       "name": "@tmustier/pi-usage-extension",
-      "size": 220104,
-      "timestamp": 1772031838891
+      "timestamp": 1772882349462,
+      "size": 220104
     }
   }
 }

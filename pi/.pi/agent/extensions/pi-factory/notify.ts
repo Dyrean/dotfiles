@@ -115,7 +115,7 @@ export function registerMessageRenderer(pi: ExtensionAPI): void {
 			}
 		}
 
-		const box = new Box(1, 1, (t) => theme.bg("customMessageBg", t));
+		const box = new Box(1, 1, (t) => t);
 		box.addChild(new Text(lines.join("\n"), 0, 0));
 		return box;
 	});

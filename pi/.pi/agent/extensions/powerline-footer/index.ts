@@ -96,7 +96,7 @@ const IMAGE_TOKEN_HIGHLIGHT_RE = /\[Image\s+\d+]/g;
 
 function highlightImageTokenChips(line: string, theme: Theme): string {
   return line.replace(IMAGE_TOKEN_HIGHLIGHT_RE, (token) =>
-    theme.bg("selectedBg", theme.fg("accent", token)),
+    theme.fg("accent", `‹${token}›`),
   );
 }
 
