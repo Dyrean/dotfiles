@@ -70,7 +70,8 @@
   },
   "plugin": [
     "@mohak34/opencode-notifier",
-    "opencode-gemini-auth@latest"
+    "opencode-gemini-auth@latest",
+    "@plannotator/opencode@latest"
   ],
   "mcp": {
     "nuxt": {
@@ -98,9 +99,14 @@
       "url": "https://mcp.exa.ai/mcp",
       "enabled": true
     },
+    "paper": {
+      "type": "remote",
+      "url": "http://127.0.0.1:29979/mcp",
+      "enabled": true
+    },
     "pencil": {
       "command": [
-        "/home/dyrean/.antigravity/extensions/highagency.pencildev-0.6.30-universal/out/mcp-server-linux-x64",
+        "/home/dyrean/.antigravity/extensions/highagency.pencildev-0.6.32-universal/out/mcp-server-linux-x64",
         "--app",
         "antigravity"
       ],

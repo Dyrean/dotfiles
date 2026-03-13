@@ -9,7 +9,8 @@
     "npm:@aliou/pi-guardrails",
     "npm:pi-agentic-compaction",
     "npm:pi-extmgr",
-    "npm:@tmustier/pi-usage-extension"
+    "npm:@tmustier/pi-usage-extension",
+    "npm:@plannotator/pi-extension"
   ],
   "hideThinkingBlock": true,
   "notification": {
