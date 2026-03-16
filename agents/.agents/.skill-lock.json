@@ -1,0 +1,102 @@
+{
+  "version": 3,
+  "skills": {
+    "vitest": {
+      "source": "onmax/nuxt-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/onmax/nuxt-skills.git",
+      "skillPath": "skills/vitest/SKILL.md",
+      "skillFolderHash": "84c406dcd6849f23a564c43a64c91d6cd696e4b7",
+      "installedAt": "2026-03-06T16:12:40.263Z",
+      "updatedAt": "2026-03-16T10:08:48.418Z"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/skills.git",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "skillFolderHash": "c2f31172b6f256272305a5e6e7228b258446899f",
+      "installedAt": "2026-03-06T16:12:59.499Z",
+      "updatedAt": "2026-03-06T16:12:59.499Z"
+    },
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
+      "skillPath": "skills/agent-browser/SKILL.md",
+      "skillFolderHash": "9fa6850b305ad7237ffe61fc12f9e3d2d9c3d990",
+      "pluginName": "agent-browser",
+      "installedAt": "2026-03-16T10:02:13.165Z",
+      "updatedAt": "2026-03-16T10:02:13.165Z"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "skillFolderHash": "928950704df8a8b885c03de5da626331e6f29cf8",
+      "pluginName": "example-skills",
+      "installedAt": "2026-03-16T10:03:30.124Z",
+      "updatedAt": "2026-03-16T10:03:30.124Z"
+    },
+    "nuxt": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/antfu/skills.git",
+      "skillPath": "skills/nuxt/SKILL.md",
+      "skillFolderHash": "a83cf8de14f79487619c7938847a0070726225da",
+      "installedAt": "2026-03-16T10:04:08.359Z",
+      "updatedAt": "2026-03-16T10:04:08.359Z"
+    },
+    "nuxt-ui": {
+      "source": "nuxt/ui",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/nuxt/ui.git",
+      "skillPath": "skills/nuxt-ui/SKILL.md",
+      "skillFolderHash": "",
+      "installedAt": "2026-03-16T10:04:37.219Z",
+      "updatedAt": "2026-03-16T10:04:37.219Z"
+    },
+    "prd": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/github/awesome-copilot.git",
+      "skillPath": "skills/prd/SKILL.md",
+      "skillFolderHash": "b4af69e637f8f2bf620c55273680669ccca3e73c",
+      "installedAt": "2026-03-16T10:05:27.372Z",
+      "updatedAt": "2026-03-16T10:05:27.372Z"
+    },
+    "vue": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/antfu/skills.git",
+      "skillPath": "skills/vue/SKILL.md",
+      "skillFolderHash": "cff239de1fa9a889b40166c85d13157b8ae5408c",
+      "installedAt": "2026-03-16T10:09:22.669Z",
+      "updatedAt": "2026-03-16T10:09:22.669Z"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/agent-skills.git",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "skillFolderHash": "3116f3e62dbd02b44a598b1aa690d2a8938e8f89",
+      "installedAt": "2026-03-16T10:09:47.308Z",
+      "updatedAt": "2026-03-16T10:09:47.308Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "cline",
+    "codex",
+    "cursor",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-cli",
+    "opencode",
+    "warp"
+  ]
+}

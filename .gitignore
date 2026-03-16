@@ -4,5 +4,3 @@ bin/.local/bin
 .vscode
 
 auth.json
-pi/**/sessions/**
-pi/**/mcp-cache.json

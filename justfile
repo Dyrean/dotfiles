@@ -5,7 +5,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 target := env("HOME")
 
 # All stow packages (explicit to avoid stowing non-package dirs)
-packages := "fastfetch ghostty git nvim opencode pi starship zsh"
+packages := "fastfetch ghostty git nvim opencode starship zsh agents"
 
 # Default recipe: show available commands
 default:
