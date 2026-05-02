@@ -3,15 +3,19 @@ font-family = JetBrains Mono
 font-size = 13
 
 # Window settings
-background-opacity = 0.9
+background-opacity = 1.0
+unfocused-split-opacity = 0.9
 window-padding-x = 10
 window-padding-y = 10
 
+# Clipboard settings
+clipboard-read = allow
+clipboard-write = allow
+
+title = ghostty
+
 # Behavior settings
 confirm-close-surface = false
-clipboard-paste-protection = false
-unfocused-split-opacity = 1.0
-shell-integration = detect
 
 # Cursor settings
 cursor-style = block
@@ -25,3 +29,7 @@ scrollback-limit = 10000000
 
 # Updates
 auto-update-channel = stable
+
+# Shell integrations
+shell-integration = detect
+quit-after-last-window-closed = true
