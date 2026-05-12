@@ -1,8 +1,13 @@
 {
-    "packages": ["npm:@plannotator/pi-extension"],
-    "lastChangelogVersion": "0.72.0",
-    "theme": "tokyo-night",
-    "defaultProvider": "openai-codex",
-    "defaultModel": "gpt-5.5",
-    "defaultThinkingLevel": "low"
+  "packages": [
+    {
+      "source": "npm:@plannotator/pi-extension",
+      "skills": []
+    }
+  ],
+  "lastChangelogVersion": "0.72.0",
+  "theme": "tokyo-night",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
+  "defaultThinkingLevel": "low"
 }
