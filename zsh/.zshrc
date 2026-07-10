@@ -3,9 +3,11 @@ ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 export PATH=$HOME/.local/bin:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
+export PATH=$HOME/go/bin:$PATH
 
-# Set Default Editor NVİM
-export EDITOR=nvim
+# Set Default Editor Zed
+export EDITOR="$(which zeditor) --wait"
+export VISUAL="$EDITOR"
 
 # Download Zinit, if it's not there yet
 if [ ! -d "$ZINIT_HOME" ]; then
@@ -65,6 +67,8 @@ alias vim="nvim"
 alias c="clear"
 alias neofetch="fastfetch"
 alias nvm="fnm"
+alias oc='opencode'
+alias zed='zeditor'
 
 # Aliases: ls
 alias l="eza --icons=always --group-directories-first -a"
@@ -93,9 +97,6 @@ alias gr='git reset'
 alias gs='git status --short'
 alias gu='git pull'
 
-# Aliases: opencode
-alias oc='opencode'
-
 # Aliases: docker
 alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
 alias dl='docker logs --tail=100'
@@ -117,20 +118,8 @@ eval "$(uv generate-shell-completion zsh)"
 # Starship
 eval "$(starship init zsh)"
 
-# fnm
-FNM_PATH="/home/dyrean/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "`fnm env`"
-fi
-
-# pnpm
-export PNPM_HOME=$HOME/.local/share/pnpm
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-export PATH="$HOME/.npm-global/bin:$PATH"
-
 # Vite+ bin (https://viteplus.dev)
 . "$HOME/.vite-plus/env"
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

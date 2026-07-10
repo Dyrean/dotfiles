@@ -87,6 +87,9 @@ symbol = " "
 
 [nodejs]
 symbol = " "
+detect_extensions = []
+detect_files = ["package.json", ".node-version", ".nvmrc", ".tool-versions"]
+detect_folders = ["node_modules"]
 
 [ocaml]
 symbol = " "
@@ -173,3 +176,12 @@ symbol = " "
 
 [gradle]
 symbol = " "
+
+[dotnet]
+detect_files = ["global.json", "Directory.Build.props", "Directory.Build.targets", "Packages.props"]
+
+[character]
+error_symbol = "[󰘧](bold red)"
+success_symbol = "[󰘧](bold green)"
+
+command_timeout = 2000
