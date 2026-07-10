@@ -5,9 +5,9 @@
       "skills": []
     }
   ],
-  "lastChangelogVersion": "0.80.5",
+  "lastChangelogVersion": "0.80.6",
   "theme": "tokyo-night",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "low"
+  "defaultThinkingLevel": "medium"
 }

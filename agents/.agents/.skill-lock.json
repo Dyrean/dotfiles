@@ -83,6 +83,33 @@
       "skillFolderHash": "3116f3e62dbd02b44a598b1aa690d2a8938e8f89",
       "installedAt": "2026-03-16T10:09:47.308Z",
       "updatedAt": "2026-03-16T10:09:47.308Z"
+    },
+    "plannotator-compound": {
+      "source": "backnotprop/plannotator",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/backnotprop/plannotator.git",
+      "skillPath": "apps/skills/extra/plannotator-compound/SKILL.md",
+      "skillFolderHash": "e7cb3bf5836705facedb2f94c6648f269d3f0748",
+      "installedAt": "2026-07-10T22:34:34.695Z",
+      "updatedAt": "2026-07-10T22:34:34.695Z"
+    },
+    "plannotator-setup-goal": {
+      "source": "backnotprop/plannotator",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/backnotprop/plannotator.git",
+      "skillPath": "apps/skills/extra/plannotator-setup-goal/SKILL.md",
+      "skillFolderHash": "29d5d60c2b8a88c1786d7bbdbbfa37e44b64f6a5",
+      "installedAt": "2026-07-10T22:34:34.696Z",
+      "updatedAt": "2026-07-10T22:34:34.696Z"
+    },
+    "plannotator-visual-explainer": {
+      "source": "backnotprop/plannotator",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/backnotprop/plannotator.git",
+      "skillPath": "apps/skills/extra/plannotator-visual-explainer/SKILL.md",
+      "skillFolderHash": "fc468280cc7897fc899ce581f0b5bd2da0ab7a3b",
+      "installedAt": "2026-07-10T22:34:34.696Z",
+      "updatedAt": "2026-07-10T22:34:34.696Z"
     }
   },
   "dismissed": {
@@ -90,13 +117,17 @@
   },
   "lastSelectedAgents": [
     "amp",
+    "antigravity",
+    "antigravity-cli",
     "cline",
     "codex",
     "cursor",
+    "deepagents",
     "gemini-cli",
     "github-copilot",
-    "kimi-cli",
+    "kimi-code-cli",
     "opencode",
-    "warp"
+    "warp",
+    "zed"
   ]
 }

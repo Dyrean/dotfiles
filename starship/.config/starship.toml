@@ -1,3 +1,5 @@
+command_timeout = 2000
+
 [aws]
 symbol = "  "
 
@@ -183,5 +185,3 @@ detect_files = ["global.json", "Directory.Build.props", "Directory.Build.targets
 [character]
 error_symbol = "[󰘧](bold red)"
 success_symbol = "[󰘧](bold green)"
-
-command_timeout = 2000

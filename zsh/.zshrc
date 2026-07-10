@@ -118,8 +118,7 @@ eval "$(uv generate-shell-completion zsh)"
 # Starship
 eval "$(starship init zsh)"
 
-# Vite+ bin (https://viteplus.dev)
-. "$HOME/.vite-plus/env"
-
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
+export PATH="$HOME/.npm-global/bin:$PATH"
