@@ -5,6 +5,7 @@ description: >
   plans, PR explainers, architecture diagrams, data tables, slide decks, and any visual
   explanation of technical concepts. Plans and PR explainers follow Plannotator's prescriptive
   approach; all other visual content delegates to nicobailon/visual-explainer.
+disable-model-invocation: true
 ---
 
 # Plannotator Visual Explainer
