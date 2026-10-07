@@ -6,7 +6,7 @@
     },
     "git:github.com/DietrichGebert/ponytail"
   ],
-  "lastChangelogVersion": "0.85.1",
+  "lastChangelogVersion": "1.0.4",
   "theme": "tokyo-night",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-sol",

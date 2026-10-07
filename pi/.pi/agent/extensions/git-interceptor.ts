@@ -5,7 +5,7 @@
  *
  * 1. Editor hang prevention — Sets GIT_EDITOR, GIT_SEQUENCE_EDITOR to `true`
  *    (no-op) and GIT_MERGE_AUTOEDIT to `no` so git never spawns an interactive
- *    editor (nvim, vim, etc.) that would hang the bash process.
+ *    editor that would hang the bash process.
  *
  * 2. Hook bypass prevention — Blocks any command containing `--no-verify` so
  *    the agent cannot circumvent git hooks (pre-commit, commit-msg, etc.).

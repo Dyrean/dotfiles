@@ -11,12 +11,8 @@
 
 [core]
   autocrlf = input
-  editor = nvim
-  fsync = none
-  ignorecase = false
-  compression = 9
+  editor = zeditor --wait
   whitespace = error
-  preloadindex = true
 
 [advice]
   addEmptyPathspec = false
@@ -31,7 +27,6 @@
   mnemonicPrefix = true
   wordRegex = .
   submodule = log
-  tool = nvim
   context = 3
   renames = copies
   interHunkContext = 10
@@ -59,7 +54,7 @@
   showUntrackedFiles = all
 
 [pager]
-  diff = diff-so-fancy | $PAGER
+  diff = diff-so-fancy | less --tabs=4 -RFX
   branch = false  # no need to use pager for git branch
   tag = false
 
@@ -70,7 +65,6 @@
 
 [pull]
   rebase = true
-  default = current
 
 [submodule]
   fetchJobs = 16
@@ -78,11 +72,6 @@
 [rebase]
   autoStash = true
   missingCommitsCheck = warn  # warn if rebasing with missing commits
-
-[pack]
-  threads = 0  # use all available threads
-  windowMemory = 1g  # use 1g of memory for pack window
-  packSizeLimit = 1g  # max size of a packfile
 
 [transfer]
   fsckObjects = true
@@ -154,7 +143,7 @@
 
 [alias]
   # List available aliases
-  aliases = !git config --get-regexp alias | sed -re 's/alias\\.(\\S*)\\s(.*)$/\\0 = \\2/g'
+  aliases = !git config --get-regexp alias | sed -re 's/alias\\.(\\S*)\\s(.*)$/\\1 = \\2/g'
   # Command shortcuts
   ci = commit
   co = checkout
@@ -174,8 +163,7 @@
   review-local = "!git lg @{push}.."
   # Edit last commit message
   reword = commit --amend
-  # Undo last commit but keep changed files in stage
-  uncommit = reset --soft HEAD~0
-  undo = reset --soft HEAD~0
+  # Undo last commit but keep changed files staged
+  undo = reset --soft HEAD~1
   # Remove file(s) from Git but not from disk
-  untrack = rm --cache --
+  untrack = rm --cached --

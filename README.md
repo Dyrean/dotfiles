@@ -8,7 +8,6 @@ My personal dotfiles for various tools and applications. These configurations ar
 
 - **Shell**: Zsh configuration with plugins and customizations
 - **Terminal**: Ghostty terminal configuration
-- **Editor**: Neovim configuration with plugins
 - **Version Control**: Git configuration and aliases
 - **Prompt**: Starship prompt configuration
 - **System Info**: Fastfetch configuration
@@ -37,7 +36,7 @@ My personal dotfiles for various tools and applications. These configurations ar
 
 3. Or install a specific package:
    ```bash
-   just install nvim
+   just install git ghostty
    ```
 
 ## 📦 Usage
@@ -45,10 +44,10 @@ My personal dotfiles for various tools and applications. These configurations ar
 ```bash
 just                    # Show available commands
 just all                # Restow all packages
-just install nvim git   # Install one or more packages
-just uninstall nvim     # Uninstall one or more packages
-just dry-run nvim       # Preview what install would do
-just adopt nvim         # Adopt existing files into a package
+just install git ghostty  # Install one or more packages
+just uninstall ghostty    # Uninstall one or more packages
+just dry-run ghostty      # Preview what install would do
+just adopt git            # Adopt existing files into a package
 just init alacritty     # Scaffold a new package directory
 just delete             # Remove all symlinks (with confirmation)
 just list               # List available packages

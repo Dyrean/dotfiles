@@ -6,7 +6,7 @@ export PATH=$HOME/.cargo/bin:$PATH
 export PATH=$HOME/go/bin:$PATH
 
 # Set Default Editor Zed
-export EDITOR="$(which zeditor) --wait"
+export EDITOR="zeditor --wait"
 export VISUAL="$EDITOR"
 
 # Download Zinit, if it's not there yet
@@ -63,7 +63,6 @@ zstyle ":fzf-tab:complete:__zoxide_z:*" fzf-preview "ls --color $realpath"
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 
 # Aliases
-alias vim="nvim"
 alias c="clear"
 alias neofetch="fastfetch"
 alias nvm="fnm"
@@ -122,3 +121,6 @@ eval "$(starship init zsh)"
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
 
 export PATH="$HOME/.npm-global/bin:$PATH"
+
+# Vite+ bin (https://viteplus.dev)
+. "/home/dyrean/.config/vite-plus/env"

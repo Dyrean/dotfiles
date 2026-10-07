@@ -3,6 +3,7 @@ import { getAgentDir } from "@earendil-works/pi-coding-agent";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join, resolve } from "node:path";
+import { redactJson, redactText, type CompiledCloakPattern } from "./redaction.ts";
 
 type CloakPatternSpec = string | {
   pattern: string;
@@ -21,13 +22,8 @@ interface CloakConfig {
   cloakCharacter?: string;
   cloakLength?: number | null;
   tryAllPatterns?: boolean;
+  outputPatterns?: CloakPatternSpec | CloakPatternSpec[];
   patterns?: CloakRuleConfig[];
-}
-
-interface CompiledCloakPattern {
-  source: string;
-  regex: RegExp;
-  replace?: string;
 }
 
 interface CompiledCloakRule {
@@ -40,6 +36,7 @@ interface RuntimeState {
   configPath: string;
   config: CloakConfig;
   rules: CompiledCloakRule[];
+  outputPatterns: CompiledCloakPattern[];
   error?: string;
 }
 
@@ -49,6 +46,7 @@ const DEFAULT_CONFIG: CloakConfig = {
   cloakCharacter: "*",
   cloakLength: null,
   tryAllPatterns: true,
+  outputPatterns: [],
   patterns: [],
 };
 
@@ -163,6 +161,7 @@ export function loadState(configPath: string = DEFAULT_CONFIG_PATH): RuntimeStat
       configPath,
       config,
       rules: (config.patterns ?? []).map(compileRule),
+      outputPatterns: toArray(config.outputPatterns).map((pattern) => compilePattern(pattern)),
     };
   } catch (error) {
     const isMissingFile = error instanceof Error && "code" in error && error.code === "ENOENT";
@@ -171,6 +170,7 @@ export function loadState(configPath: string = DEFAULT_CONFIG_PATH): RuntimeStat
       configPath,
       config: DEFAULT_CONFIG,
       rules: [],
+      outputPatterns: [],
       error: isMissingFile
         ? `pi-cloak config not found at ${configPath}`
         : `pi-cloak failed to load ${configPath}: ${error instanceof Error ? error.message : String(error)}`,
@@ -195,120 +195,6 @@ function ruleMatchesPath(rule: CompiledCloakRule, rawPath: string, cwd: string):
   return candidates.some((candidate) => rule.fileRegexes.some((regex) => regex.test(candidate)));
 }
 
-function repeatToLength(seed: string, length: number): string {
-  if (length <= 0) return "";
-  if (!seed) return "";
-
-  const pieces: string[] = [];
-  let totalLength = 0;
-  while (totalLength < length) {
-    pieces.push(seed);
-    totalLength += seed.length;
-  }
-
-  return pieces.join("").slice(0, length);
-}
-
-function applyReplacementTemplate(template: string, match: string, captures: string[]): string {
-  let result = "";
-
-  for (let index = 0; index < template.length; index++) {
-    const char = template[index]!;
-    if (char !== "$") {
-      result += char;
-      continue;
-    }
-
-    const next = template[index + 1];
-    if (!next) {
-      result += "$";
-      continue;
-    }
-
-    if (next === "$") {
-      result += "$";
-      index += 1;
-      continue;
-    }
-
-    if (next === "&") {
-      result += match;
-      index += 1;
-      continue;
-    }
-
-    if (/\d/.test(next)) {
-      let end = index + 1;
-      while (end + 1 < template.length && /\d/.test(template[end + 1]!) && end - index < 2) {
-        end += 1;
-      }
-
-      const groupIndex = Number(template.slice(index + 1, end + 1)) - 1;
-      result += captures[groupIndex] ?? "";
-      index = end;
-      continue;
-    }
-
-    result += `$${next}`;
-    index += 1;
-  }
-
-  return result;
-}
-
-function buildMaskedReplacement(
-  match: string,
-  captures: string[],
-  replace: string | undefined,
-  cloakCharacter: string,
-  cloakLength: number | null | undefined,
-): string {
-  const visible = replace ? applyReplacementTemplate(replace, match, captures) : match.slice(0, 1);
-  const targetLength = cloakLength ?? Math.max(match.length, visible.length);
-  const truncatedVisible = visible.slice(0, targetLength);
-  const maskedLength = Math.max(0, targetLength - truncatedVisible.length);
-  return truncatedVisible + repeatToLength(cloakCharacter, maskedLength);
-}
-
-function applyPatternsToLine(
-  line: string,
-  patterns: CompiledCloakPattern[],
-  config: CloakConfig,
-): { line: string; changed: boolean; } {
-  let updated = line;
-  let changed = false;
-
-  for (const pattern of patterns) {
-    let matchedThisPattern = false;
-    const next = updated.replace(pattern.regex, (match: string, ...args: unknown[]) => {
-      const captures = args.slice(0, Math.max(0, args.length - 2)).map((value) => String(value ?? ""));
-      const replacement = buildMaskedReplacement(
-        match,
-        captures,
-        pattern.replace,
-        config.cloakCharacter ?? "*",
-        config.cloakLength,
-      );
-
-      if (replacement !== match) {
-        matchedThisPattern = true;
-      }
-
-      return replacement;
-    });
-
-    if (matchedThisPattern) {
-      updated = next;
-      changed = true;
-      if (!config.tryAllPatterns) {
-        break;
-      }
-    }
-  }
-
-  return { line: updated, changed };
-}
-
 export function cloakText(rawText: string, rawPath: string, cwd: string, state: RuntimeState): string {
   if (!state.config.enabled) return rawText;
 
@@ -323,9 +209,9 @@ export function cloakText(rawText: string, rawPath: string, cwd: string, state: 
     let updated = line;
 
     for (const rule of matchingRules) {
-      const result = applyPatternsToLine(updated, rule.patterns, state.config);
+      const result = redactText(updated, rule.patterns, state.config);
       if (result.changed) {
-        updated = result.line;
+        updated = result.text;
         changed = true;
       }
     }
@@ -365,31 +251,30 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("tool_result", async (event, ctx) => {
-    if (event.toolName !== "read") return undefined;
     if (!state.config.enabled) return undefined;
 
-    const rawPath = typeof event.input?.path === "string" ? event.input.path : "";
-    if (!rawPath) return undefined;
-
+    const rawPath = event.toolName === "read" && typeof event.input.path === "string" ? event.input.path : undefined;
     let changed = false;
     const content = event.content.map((part) => {
-      if (part.type !== "text" || typeof part.text !== "string") {
-        return part;
-      }
+      if (part.type !== "text" || typeof part.text !== "string") return part;
 
-      const cloakedText = cloakText(part.text, rawPath, ctx.cwd, state);
-      if (cloakedText === part.text) {
-        return part;
-      }
+      const globalResult = redactText(part.text, state.outputPatterns, state.config);
+      const cloakedText = rawPath ? cloakText(globalResult.text, rawPath, ctx.cwd, state) : globalResult.text;
+      if (cloakedText === part.text) return part;
 
       changed = true;
-      return {
-        ...part,
-        text: cloakedText,
-      };
+      return { ...part, text: cloakedText };
     });
 
+    const structured = event.structuredContent === undefined
+      ? undefined
+      : redactJson(event.structuredContent, state.outputPatterns, state.config);
+    changed ||= structured?.changed === true;
+
     if (!changed) return undefined;
-    return { content };
+    return {
+      content,
+      ...(structured ? { structuredContent: structured.value } : {}),
+    };
   });
 }

@@ -1,35 +1,11 @@
-# Font settings
 font-family = JetBrains Mono
 font-size = 13
 
-# Window settings
-background-opacity = 1.0
 unfocused-split-opacity = 0.9
 window-padding-x = 10
 window-padding-y = 10
 
-# Clipboard settings
-clipboard-read = allow
-clipboard-write = allow
-
+# Keep clipboard reads and closing active commands behind Ghostty's prompts.
 title = ghostty
-
-# Behavior settings
-confirm-close-surface = false
-
-# Cursor settings
-cursor-style = block
 cursor-style-blink = false
-
-# Theme
-theme=TokyoNight
-
-# Scrolling
-scrollback-limit = 10000000
-
-# Updates
-auto-update-channel = stable
-
-# Shell integrations
-shell-integration = detect
-quit-after-last-window-closed = true
+theme = TokyoNight

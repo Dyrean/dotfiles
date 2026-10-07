@@ -5,7 +5,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 target := env("HOME")
 
 # All stow packages (explicit to avoid stowing non-package dirs)
-packages := "fastfetch ghostty git nvim opencode starship zsh agents"
+packages := "fastfetch ghostty git opencode starship zsh agents"
 
 # Default recipe: show available commands
 default:
@@ -20,7 +20,7 @@ all:
     done
 
 # Install (restow) one or more packages
-[doc("Install packages: just install nvim git zsh")]
+[doc("Install packages: just install git ghostty zsh")]
 install +pkgs:
     @for pkg in {{ pkgs }}; do \
         if [ ! -d "$pkg" ]; then \
@@ -32,7 +32,7 @@ install +pkgs:
     done
 
 # Dry-run install to preview what would change
-[doc("Preview install: just dry-run nvim")]
+[doc("Preview install: just dry-run ghostty")]
 dry-run +pkgs:
     @for pkg in {{ pkgs }}; do \
         if [ ! -d "$pkg" ]; then \
@@ -44,7 +44,7 @@ dry-run +pkgs:
     done
 
 # Adopt existing files into stow packages then restow
-[doc("Adopt existing files: just adopt nvim")]
+[doc("Adopt existing files: just adopt git")]
 adopt +pkgs:
     @for pkg in {{ pkgs }}; do \
         if [ ! -d "$pkg" ]; then \
@@ -65,7 +65,7 @@ delete:
     done
 
 # Uninstall (unlink) one or more packages
-[doc("Uninstall packages: just uninstall nvim git")]
+[doc("Uninstall packages: just uninstall git ghostty")]
 uninstall +pkgs:
     @for pkg in {{ pkgs }}; do \
         if [ ! -d "$pkg" ]; then \

@@ -1,11 +1,11 @@
 ---
 name: plannotator-compound
+disable-model-invocation: true
 description: >
   Analyze a user's Plannotator plan archive to extract denial patterns, feedback
   taxonomy, evolution over time, and actionable prompt improvements — then produce
   a polished HTML dashboard report. Falls back to Claude Code ExitPlanMode denial
   reasons when Plannotator data is unavailable.
-disable-model-invocation: true
 ---
 
 # Compound Planning Analysis

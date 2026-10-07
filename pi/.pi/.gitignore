@@ -12,7 +12,11 @@ coverage
 
 **/sessions
 
+mcp-auth.json
 mcp-cache.json
+models-store.json
+
+trust.json
 
 # logs
 logs
